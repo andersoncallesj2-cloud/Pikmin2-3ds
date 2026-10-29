@@ -1,0 +1,23 @@
+{
+  "src/Dolphin/mtx/mtx.c": {
+    "original_file_sha256": "b9e84bfbecbdfddd77763a1c11fc8d0de29c9fed0eff7320a5751353af605bfa",
+    "extracted_functions_sha256": {
+      "C_MTXLookAt": "fef9cf4f5588225954b1058650736fd00af14cc278a9a6956c1fb49fb62e0a6d"
+    }
+  },
+  "src/Dolphin/mtx/mtx44.c": {
+    "original_file_sha256": "45f3c8c6b3c02fcdd3a9b69eb27366cf39185447bd8d24b28c356d97d1bbc5f9",
+    "extracted_functions_sha256": {
+      "C_MTXPerspective": "bc5cf567a15f93460eaa19c7c140cb9f2f54a190b96c4382bc4a4e61c0114a5a",
+      "C_MTXOrtho": "f185829f90c460a1ad14fa03352930a41655ce6aac066a83d9ab1151f7762a17"
+    }
+  },
+  "src/sysCommonU/sysMath.cpp": {
+    "original_file_sha256": "83078e7a612ca117890a53b42a761d59bb0358e2cbb7ef5ce716868785186718",
+    "extracted_functions_sha256": {
+      "qdist2": "7df1368407b4674513c66ac2b53cd6c6787f8f18a3c359375b2d42d889f9a0d8",
+      "roundAng": "ea0e438da0582234af55c950f9a603070ccd012183b80ef3402a26de49becbf2",
+      "angDist": "5e1a923f13c0e0b2110a4088107cb5eae8f9fc5cae6f992cacbfa1cfcf23d83e"
+    }
+  }
+}

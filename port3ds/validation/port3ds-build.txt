@@ -1,0 +1,6 @@
+original_section.cpp
+port_engine.cpp
+main.c
+built ... pikmin2-port.smdh
+linking pikmin2-port.elf
+built ... pikmin2-port.3dsx

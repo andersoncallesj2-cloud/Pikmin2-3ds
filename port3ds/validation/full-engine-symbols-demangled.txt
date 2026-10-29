@@ -1,0 +1,607 @@
+
+/workspace/tools/engine-probes/final-build/sysBootup.o:
+00000000 B GameChoice
+00000000 T main
+00000000 B __OSActiveThreadQueue
+00000000 B __OSBusClock
+00000000 B __OSCoreClock
+00000000 B __OSCurrentContext
+00000000 B __OSCurrentInterruptMask
+00000000 B __OSCurrentThread
+00000000 B __OSDeviceCode
+00000000 B __OSFPUContext
+00000000 B __OSPriorInterruptMask
+         U OSReport
+00000000 B __OSTVMode
+00000000 B __OSWirelessPadFixMode
+         U System::initialize()
+         U System::run()
+         U System::System()
+         U operator new(unsigned int)
+
+/workspace/tools/engine-probes/final-build/appThread.o:
+00000000 B GameChoice
+00000000 B __OSActiveThreadQueue
+00000000 B __OSBusClock
+00000000 B __OSCoreClock
+00000000 B __OSCurrentContext
+00000000 B __OSCurrentInterruptMask
+00000000 B __OSCurrentThread
+00000000 B __OSDeviceCode
+00000000 B __OSFPUContext
+00000000 B __OSPriorInterruptMask
+00000000 B __OSTVMode
+00000000 B __OSWirelessPadFixMode
+         U operator delete(void*, unsigned int)
+00000000 T AppThread::AppThread(unsigned long, int, int)
+00000000 T AppThread::AppThread(unsigned long, int, int)
+00000000 W AppThread::~AppThread()
+00000000 W AppThread::~AppThread()
+00000000 W AppThread::~AppThread()
+00000000 n AppThread::~AppThread()
+00000000 W JKRThread::run()
+         U JKRThread::JKRThread(unsigned long, int, int)
+         U JKRThread::~JKRThread()
+00000000 V vtable for AppThread
+
+/workspace/tools/engine-probes/final-build/gameflow.o:
+         w __cxa_pure_virtual
+         U __float_nan
+00000000 B GameChoice
+00000000 t _GLOBAL__sub_I___OSBusClock
+00000000 B __OSActiveThreadQueue
+00000000 B __OSBusClock
+00000000 B __OSCoreClock
+00000000 B __OSCurrentContext
+00000000 B __OSCurrentInterruptMask
+00000000 B __OSCurrentThread
+00000000 B __OSDeviceCode
+00000000 B __OSFPUContext
+00000000 B __OSPriorInterruptMask
+00000000 B __OSTVMode
+00000000 B __OSWirelessPadFixMode
+00000000 W makeExpHeap(unsigned int, JKRHeap*, bool)
+00000000 W JKRGetCurrentHeap()
+00000000 t __static_initialization_and_destruction_0()
+         U operator delete(void*)
+         U JKRExpHeap::create(unsigned long, JKRHeap*, bool)
+         U BootSection::BootSection(JKRHeap*)
+00000000 W ISectionMgr::getCurrentSection()
+00000000 W ISectionMgr::ISectionMgr()
+00000000 W ISectionMgr::ISectionMgr()
+00000000 n ISectionMgr::ISectionMgr()
+00000000 d (anonymous namespace)::sSectionInfo
+         U JUTException::panic_f(char const*, int, char const*, ...)
+         U RootMenuSection::RootMenuSection(JKRHeap*)
+         U Demo::Section::Section(JKRHeap*)
+         U Game::VsGameSection::VsGameSection(JKRHeap*, bool)
+         U Game::SingleGameSection::SingleGameSection(JKRHeap*)
+00000000 b Game::P2JST::gfNAN_
+00000000 b Game::P2JST::govNAN_
+00000000 b Game::P2JST::gu32NAN_
+         U Title::Section::Section(JKRHeap*)
+00000000 W JGadget::TAllocator<void*>::deallocate(void**, unsigned long)
+00000000 W JGadget::TAllocator<void*>::AllocateRaw(unsigned int)
+00000000 W JGadget::TAllocator<void*>::DeallocateRaw(void*)
+00000000 W JGadget::TAllocator<void*>::destroy(void**)
+00000000 W JGadget::TAllocator<void*>::allocate(unsigned int, void*)
+00000000 T JGadget::TVector<void*, JGadget::TAllocator<void*> >::Insert_raw(void**, unsigned long)
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::DestroyElement_(void**, void**)
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::DestroyElement_all_()
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::set(void**)
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::TDestructed_deallocate_(JGadget::TAllocator<void*>&, void**)
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::TDestructed_deallocate_(JGadget::TAllocator<void*>&, void**)
+00000000 n JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::TDestructed_deallocate_(JGadget::TAllocator<void*>&, void**)
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::~TDestructed_deallocate_()
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::~TDestructed_deallocate_()
+00000000 n JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::~TDestructed_deallocate_()
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::end()
+         U JKRHeap::getFreeSize()
+         U JKRHeap::sCurrentHeap
+00000000 W JKRHeap::getCurrentHeap()
+         U JKRHeap::becomeCurrentHeap()
+00000000 W JKRHeap::TState::TArgument::TArgument(JKRHeap const*, unsigned long, bool)
+00000000 W JKRHeap::TState::TArgument::TArgument(JKRHeap const*, unsigned long, bool)
+00000000 n JKRHeap::TState::TArgument::TArgument(JKRHeap const*, unsigned long, bool)
+00000000 W JKRHeap::TState::TLocation::TLocation()
+00000000 W JKRHeap::TState::TLocation::TLocation()
+00000000 n JKRHeap::TState::TLocation::TLocation()
+00000000 W JKRHeap::TState::TState(JKRHeap*)
+00000000 W JKRHeap::TState::TState(JKRHeap*)
+00000000 n JKRHeap::TState::TState(JKRHeap*)
+         U JKRHeap::TState::~TState()
+         U JKRHeap::destroy()
+00000000 r JStudio::fvb::data::PARAGRAPH_DATA
+00000000 r JStudio::stb::data::BLOCK_NONE
+00000000 r JStudio::stb::data::BLOCK_ACTOR
+00000000 r JStudio::stb::data::BLOCK_LIGHT
+00000000 r JStudio::stb::data::BLOCK_SOUND
+00000000 r JStudio::stb::data::BLOCK_CAMERA
+00000000 r JStudio::stb::data::BLOCK_MESSAGE
+00000000 r JStudio::stb::data::BLOCK_PARTICLE
+00000000 r JStudio::stb::data::BLOCK_AMBIENTLIGHT
+00000000 r JStudio::stb::data::guBit_TSequence_type
+00000000 r JStudio::stb::data::BLOCK_FOG
+         U Section::exit()
+00000000 T GameFlow::setSection()
+00000000 T GameFlow::createSection(JKRHeap*)
+00000000 T GameFlow::getSectionInfo(int)
+00000000 W GameFlow::getCurrentSection()
+00000000 D GameFlow::mActiveSectionFlag
+00000000 T GameFlow::run()
+00000000 T GameFlow::GameFlow()
+00000000 T GameFlow::GameFlow()
+00000000 T GameFlow::~GameFlow()
+00000000 T GameFlow::~GameFlow()
+00000000 T JMath::TSinCosTable<1024, float>::cosShort(short) const
+00000000 T JMath::TSinCosTable<1024, float>::sinShort(short) const
+00000000 T JMath::TSinCosTable<2048, float>::cosShort(short) const
+00000000 T JMath::TSinCosTable<2048, float>::sinShort(short) const
+00000000 T JMath::TSinCosTable<5096, float>::cosShort(short) const
+00000000 T JMath::TSinCosTable<5096, float>::sinShort(short) const
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::GetSize_extend_(unsigned int) const
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::size() const
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::begin() const
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::capacity() const
+00000000 W std::numeric_limits<unsigned long>::max()
+00000000 W std::__copy_backward<void*, 1>::copy_backward(void**, void**, void**)
+00000000 W std::__uninitialized_copy_helper<void*, 0, 1>::uninitialized_copy(void**, void**, void**)
+         U operator new(unsigned int)
+00000000 W void** std::copy_backward<void*>(void**, void**, void**)
+00000000 W void** std::uninitialized_copy<void*>(void**, void**, void**)
+00000000 V vtable for ISectionMgr
+00000000 R vtable for GameFlow
+
+/workspace/tools/engine-probes/final-build/section.o:
+         w __cxa_pure_virtual
+         U DCStoreRange
+00000000 b Debug_BBA
+         U __float_nan
+00000000 B GameChoice
+00000000 t _GLOBAL__sub_I___OSBusClock
+         U gTHPReaderDvdAccess
+00000000 B __OSActiveThreadQueue
+00000000 B __OSBusClock
+00000000 B __OSCoreClock
+00000000 B __OSCurrentContext
+00000000 B __OSCurrentInterruptMask
+00000000 B __OSCurrentThread
+00000000 B __OSDeviceCode
+00000000 B __OSFPUContext
+00000000 B __OSPriorInterruptMask
+00000000 B __OSTVMode
+00000000 B __OSWirelessPadFixMode
+         U sys
+00000000 W PSMGetSceneMgrCheck()
+00000000 t __static_initialization_and_destruction_0()
+         U operator delete(void*)
+         U operator delete(void*, unsigned int)
+00000000 b __DBInterface
+00000000 r unusedSectionArray
+00000000 b DBVerbose
+00000000 b sPlayTime
+         U JFWDisplay::waitBlanking(int)
+         U JFWDisplay::createManager(_GXRenderModeObj const*, JKRHeap*, JUTXfb::EXfbNumber, bool)
+         U JFWDisplay::destroyManager()
+         U JKRExpHeap::create(unsigned long, JKRHeap*, bool)
+         U JKRDisposer::JKRDisposer()
+         U JKRDisposer::~JKRDisposer()
+         U JUTException::panic_f(char const*, int, char const*, ...)
+00000000 b Game::P2JST::gfNAN_
+00000000 b Game::P2JST::govNAN_
+00000000 b Game::P2JST::gu32NAN_
+         U JUTXfb::clearIndex()
+         U JUTXfb::sManager
+         U System::beginFrame()
+         U System::beginRender()
+         U System::initGenNode()
+         U System::setFrameRate(int)
+         U System::refreshGenNode()
+         U System::isDvdErrorOccured()
+         U System::setCurrentDisplay(JFWDisplay*)
+         U System::clearCurrentDisplay(JFWDisplay*)
+         U System::dvdLoadSyncAllNoBlock()
+         U System::endFrame()
+         U System::endRender()
+00000000 W JGadget::TAllocator<void*>::deallocate(void**, unsigned long)
+00000000 W JGadget::TAllocator<void*>::AllocateRaw(unsigned int)
+00000000 W JGadget::TAllocator<void*>::DeallocateRaw(void*)
+00000000 W JGadget::TAllocator<void*>::destroy(void**)
+00000000 W JGadget::TAllocator<void*>::allocate(unsigned int, void*)
+00000000 T JGadget::TVector<void*, JGadget::TAllocator<void*> >::Insert_raw(void**, unsigned long)
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::DestroyElement_(void**, void**)
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::DestroyElement_all_()
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::set(void**)
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::TDestructed_deallocate_(JGadget::TAllocator<void*>&, void**)
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::TDestructed_deallocate_(JGadget::TAllocator<void*>&, void**)
+00000000 n JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::TDestructed_deallocate_(JGadget::TAllocator<void*>&, void**)
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::~TDestructed_deallocate_()
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::~TDestructed_deallocate_()
+00000000 n JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::~TDestructed_deallocate_()
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::end()
+         U JKRHeap::getFreeSize()
+         U JKRHeap::becomeCurrentHeap()
+         U JKRHeap::destroy()
+         U JKRHeap::freeAll()
+         U JKRHeap::sRootHeap
+00000000 r JStudio::fvb::data::PARAGRAPH_DATA
+00000000 r JStudio::stb::data::BLOCK_NONE
+00000000 r JStudio::stb::data::BLOCK_ACTOR
+00000000 r JStudio::stb::data::BLOCK_LIGHT
+00000000 r JStudio::stb::data::BLOCK_SOUND
+00000000 r JStudio::stb::data::BLOCK_CAMERA
+00000000 r JStudio::stb::data::BLOCK_MESSAGE
+00000000 r JStudio::stb::data::BLOCK_PARTICLE
+00000000 r JStudio::stb::data::BLOCK_AMBIENTLIGHT
+00000000 r JStudio::stb::data::guBit_TSequence_type
+00000000 r JStudio::stb::data::BLOCK_FOG
+00000000 T Section::beginFrame()
+00000000 W Section::forceReset()
+00000000 T Section::beginRender()
+00000000 W Section::forceFinish()
+00000000 W Section::isFinishable()
+00000000 W Section::doLoadingStart()
+00000000 W Section::getCurrentSection()
+00000000 T Section::run()
+00000000 T Section::draw(Graphics&)
+00000000 T Section::exit()
+00000000 T Section::init()
+00000000 T Section::main()
+00000000 W Section::doExit()
+00000000 T Section::fadeIn()
+00000000 T Section::update()
+00000000 T Section::fadeOut()
+00000000 T Section::loading()
+00000000 W Section::drawInit(Graphics&)
+00000000 W Section::drawInit(Graphics&, Section::EDrawInitMode)
+00000000 T Section::endFrame()
+00000000 W Section::doLoading()
+00000000 T Section::endRender()
+00000000 T Section::Section(JFWDisplay*, JKRHeap*, bool)
+00000000 T Section::Section(JFWDisplay*, JKRHeap*, bool)
+00000000 T Section::~Section()
+00000000 T Section::~Section()
+00000000 T Section::~Section()
+         U Graphics::Graphics()
+00000000 W ISection::ISection()
+00000000 W ISection::ISection()
+00000000 n ISection::ISection()
+00000000 W ISection::~ISection()
+00000000 W ISection::~ISection()
+00000000 W ISection::~ISection()
+00000000 n ISection::~ISection()
+         U JUTFader::JUTFader(int, int, int, int, JUtility::TColor)
+00000000 W JUtility::TColor::set(unsigned char, unsigned char, unsigned char, unsigned char)
+00000000 W JUtility::TColor::TColor(unsigned char, unsigned char, unsigned char, unsigned char)
+00000000 W JUtility::TColor::TColor(unsigned char, unsigned char, unsigned char, unsigned char)
+00000000 n JUtility::TColor::TColor(unsigned char, unsigned char, unsigned char, unsigned char)
+         U JUTVideo::sManager
+         U PSSystem::spSceneMgr
+00000000 W PSSystem::getSceneMgr()
+00000000 W PSSystem::validateSceneMgr(PSSystem::SceneMgr*)
+00000000 W PSSystem::SceneMgr::checkScene()
+00000000 W PSSystem::SceneMgr::doStopMainSeqCheck(unsigned long)
+         U SysTimers::_stop(char*)
+         U SysTimers::_start(char*, bool)
+         U SysTimers::newFrame()
+00000000 T JMath::TSinCosTable<1024, float>::cosShort(short) const
+00000000 T JMath::TSinCosTable<1024, float>::sinShort(short) const
+00000000 T JMath::TSinCosTable<2048, float>::cosShort(short) const
+00000000 T JMath::TSinCosTable<2048, float>::sinShort(short) const
+00000000 T JMath::TSinCosTable<5096, float>::cosShort(short) const
+00000000 T JMath::TSinCosTable<5096, float>::sinShort(short) const
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::GetSize_extend_(unsigned int) const
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::size() const
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::begin() const
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::capacity() const
+00000000 W std::numeric_limits<unsigned long>::max()
+00000000 W std::__copy_backward<void*, 1>::copy_backward(void**, void**, void**)
+00000000 W std::__uninitialized_copy_helper<void*, 0, 1>::uninitialized_copy(void**, void**, void**)
+         U operator new(unsigned int)
+00000000 W void** std::copy_backward<void*>(void**, void**, void**)
+00000000 W void** std::uninitialized_copy<void*>(void**, void**, void**)
+00000000 R vtable for Section
+00000000 V vtable for ISection
+
+/workspace/tools/engine-probes/final-build/system.o:
+         U __aeabi_uidiv
+         U CARDProbe
+         w __cxa_pure_virtual
+00000000 b Debug_BBA
+         U DVDGetDriveStatus
+00000000 B GameChoice
+00000000 t _GLOBAL__sub_I___OSBusClock
+         U gResMgr2D
+         U memcpy
+00000000 B __OSActiveThreadQueue
+00000000 B __OSBusClock
+00000000 B __OSCoreClock
+00000000 B __OSCurrentContext
+00000000 B __OSCurrentInterruptMask
+00000000 B __OSCurrentThread
+00000000 B __OSDeviceCode
+00000000 B __OSFPUContext
+         U OSGetCurrentThread
+         U OSGetTick
+00000000 t OSInitFastCast
+         U OSInitMutex
+         U OSLockMutex
+         U OSPanic
+00000000 B __OSPriorInterruptMask
+         U OSReport
+         U OSSendMessage
+         U OSSetEuRgb60Mode
+         U OSSetProgressiveMode
+         U OSSuspendThread
+00000000 B __OSTVMode
+         U OSUnlockMutex
+00000000 B __OSWirelessPadFixMode
+         U srand
+00000000 B sys
+         U VIFlush
+         U VISetBlack
+         U VIWaitForRetrace
+         U vsnprintf
+00000000 W makeExpHeap(unsigned int, JKRHeap*, bool)
+00000000 W makeSolidHeap(unsigned int, JKRHeap*, bool)
+00000000 W JKRGetResource(char const*, JKRFileLoader*)
+00000000 T retraceCallback(unsigned long)
+00000000 W JKRMountDvdDrive(char const*, JKRHeap*, char const*)
+00000000 W JKRGetCurrentHeap()
+00000000 t __static_initialization_and_destruction_0()
+00000000 T myTask(void*)
+         U operator delete(void*)
+00000000 r aramStrmName
+00000000 d cMapFileName
+00000000 b __DBInterface
+00000000 t kando_panic_f(bool, char const*, int, char const*, ...)
+00000000 d sUseABXCommand
+00000000 t preUserCallback(unsigned short, OSContext*, unsigned long, unsigned long)
+00000000 b exCallbackObject
+00000000 t kando_panic_f_va(bool, char const*, int, char const*, std::__va_list*)
+00000000 d sRenderModeTable
+00000000 d localPal608x448IntDf
+00000000 d localNtsc608x448IntDf
+00000000 d localPal60608x448IntDf
+00000000 d localNtsc608x448IntDfProg
+00000000 t Pikmin2DefaultMemoryErrorRoutine(void*, unsigned long, int)
+00000000 b DBVerbose
+         U HeapStatus::HeapStatus()
+         U JKRExpHeap::create(unsigned long, JKRHeap*, bool)
+         U JSUPtrLink::~JSUPtrLink()
+00000000 W JUTConsole::setVisible(bool)
+00000000 W JUTConsole::startPrint(int, char*)
+         U JUTConsole::print(char const*)
+         U JUTConsole::print_f(char const*, ...)
+00000000 W JUTConsole::setOutput(unsigned int)
+         U JUTGamePad::read()
+         U JUTRomFont::JUTRomFont(JKRHeap*)
+         U Pikmin2ARAM::Mgr::init()
+         U JKRFileCache::mount(char const*, JKRHeap*, char const*)
+         U JKRSolidHeap::adjustSize()
+         U JKRSolidHeap::create(unsigned long, JKRHeap*, bool)
+00000000 W JUTException::getConsole()
+00000000 W JUTException::getManager()
+00000000 W JUTException::setGamePad(JUTGamePad*)
+         U JUTException::appendMapFile(char const*)
+         U JUTException::sErrorManager
+         U JUTException::sMessageQueue
+         U JUTException::setPreUserCallback(void (*)(unsigned short, OSContext*, unsigned long, unsigned long))
+         U JUTException::panic_f(char const*, int, char const*, ...)
+         U JUTException::readPad(unsigned long*, unsigned long*)
+         U JUTException::sConsole
+         U JUTException::waitTime(long)
+         U LoadResource::Mgr::init()
+         U ResetManager::update()
+00000000 W ResetManager::setFlag(unsigned long)
+00000000 W ResetManager::resetFlag(unsigned long)
+         U ResetManager::ResetManager(float)
+         U JKRFileLoader::getGlbResource(char const*, JKRFileLoader*)
+         U MemoryCardMgr::init()
+         U MemoryCardMgr::cardProc(void*)
+         U JKRThreadSwitch::loopProc()
+         U JKRThreadSwitch::sManager
+         U DvdThreadCommand::loadUseCallBack(IDelegate*)
+         U DvdThreadCommand::DvdThreadCommand()
+00000000 W DvdThreadCommand::~DvdThreadCommand()
+00000000 W DvdThreadCommand::~DvdThreadCommand()
+00000000 n DvdThreadCommand::~DvdThreadCommand()
+         U JUTConsoleManager::sManager
+00000000 W PSM::Factory::newSceneMgr()
+00000000 W PSM::Factory::Factory()
+00000000 W PSM::Factory::Factory()
+00000000 n PSM::Factory::Factory()
+         U PSM::SeSound::makeSeSound()
+         U PSM::SceneMgr::SceneMgr()
+         U ARAM::Mgr::init()
+         U Game::GameConfig::load(char*)
+         U Game::MemoryCard::Mgr::Mgr()
+         U Game::PelletList::Mgr::globalInstance()
+         U Game::gGameConfig
+00000000 T Game::StateMachine<ebi::FileSelect::TMgr>::start(ebi::FileSelect::TMgr*, int, Game::StateArg*)
+         U Game::CommonSaveData::Mgr::setDeflicker()
+         U Game::CommonSaveData::Mgr::Mgr()
+         U Game::Stages::Stages()
+         U Game::PlayData::construct()
+         U Game::MovieList::construct()
+         U Game::stageList
+         U P2JME::Mgr::create(JKRExpHeap*)
+         U PSGame::SysFactory::newSoundSystem()
+         U PSGame::SysFactory::SysFactory()
+00000000 T System::addGenNode(CNode*)
+00000000 T System::beginFrame()
+00000000 T System::inactiveGP()
+00000000 T System::initialize()
+00000000 B System::sVerifyArg
+00000000 T System::beginRender()
+00000000 T System::dvdLoadFile(DvdThreadCommand*, char*, JKRHeap*)
+00000000 T System::dvdLoadSync(DvdThreadCommand*, DvdThread::ESyncBlockFlag)
+00000000 T System::GXVerifyArg::GXVerifyArg()
+00000000 T System::GXVerifyArg::GXVerifyArg()
+00000000 T System::initGenNode()
+00000000 B System::mRenderMode
+00000000 T System::setFrameRate(int)
+00000000 T System::createRomFont(JKRHeap*)
+00000000 T System::deleteThreads()
+00000000 T System::heapStatusEnd(char*)
+00000000 T System::isResetActive()
+00000000 T System::setRenderMode(System::ERenderMode)
+00000000 T System::destroyRomFont()
+00000000 T System::dvdLoadArchive(DvdThreadCommand*, char*, JKRHeap*)
+00000000 T System::dvdLoadSyncAll(DvdThread::ESyncBlockFlag)
+00000000 T System::heapStatusDump(bool)
+00000000 T System::refreshGenNode()
+00000000 T System::heapStatusStart(char*, JKRHeap*)
+00000000 T System::changeRenderMode(System::ERenderMode)
+00000000 T System::getRenderModeObj()
+00000000 T System::heapStatusNormal()
+00000000 T System::setGXVerifyLevel(System::GXVerifyArg&)
+00000000 T System::createSoundSystem()
+00000000 T System::getPlayCommonData()
+00000000 T System::isDvdErrorOccured()
+00000000 T System::loadResourceFirst()
+00000000 T System::loadSoundResource()
+00000000 T System::resetPermissionOn()
+00000000 T System::setCurrentDisplay(JFWDisplay*)
+00000000 T System::clearGXVerifyLevel()
+00000000 T System::dvdLoadSyncNoBlock(DvdThreadCommand*)
+00000000 T System::dvdLoadUseCallBack(DvdThreadCommand*, IDelegate*)
+00000000 T System::forceFinishSection()
+00000000 T System::heapStatusDumpNode()
+00000000 T System::loadResourceSecond()
+00000000 T System::clearCurrentDisplay(JFWDisplay*)
+00000000 T System::assert_fragmentation(char*)
+00000000 T System::endChangeCurrentHeap()
+00000000 T System::FragmentationChecker::FragmentationChecker(char*, bool)
+00000000 T System::FragmentationChecker::FragmentationChecker(char*, bool)
+00000000 T System::FragmentationChecker::~FragmentationChecker()
+00000000 T System::FragmentationChecker::~FragmentationChecker()
+00000000 T System::heapStatusIndividual()
+00000000 T System::initCurrentHeapMutex()
+00000000 T System::dvdLoadSyncAllNoBlock()
+00000000 T System::enableCPULockDetector(int)
+00000000 T System::disableCPULockDetector()
+00000000 T System::setOptionBlockSaveFlag()
+00000000 T System::startChangeCurrentHeap(JKRHeap*)
+00000000 T System::dvdLoadArchiveTemporary(DvdThreadCommand*, char*, JKRHeap*)
+00000000 T System::checkOptionBlockSaveFlag()
+00000000 T System::clearOptionBlockSaveFlag()
+00000000 T System::constructWithDvdAccessFirst()
+00000000 T System::constructWithDvdAccessSecond()
+00000000 T System::run()
+00000000 T System::getTime()
+00000000 T System::resetOn(bool)
+00000000 T System::activeGP()
+00000000 T System::endFrame()
+00000000 T System::resetOff()
+00000000 T System::construct()
+00000000 T System::endRender()
+00000000 T System::System()
+00000000 T System::System()
+00000000 T System::~System()
+00000000 T System::~System()
+00000000 W BitFlag<unsigned long>::clear()
+00000000 W BitFlag<unsigned long>::BitFlag()
+00000000 W BitFlag<unsigned long>::BitFlag()
+00000000 n BitFlag<unsigned long>::BitFlag()
+00000000 W JGadget::TAllocator<void*>::deallocate(void**, unsigned long)
+00000000 W JGadget::TAllocator<void*>::AllocateRaw(unsigned int)
+00000000 W JGadget::TAllocator<void*>::DeallocateRaw(void*)
+00000000 W JGadget::TAllocator<void*>::destroy(void**)
+00000000 W JGadget::TAllocator<void*>::allocate(unsigned int, void*)
+00000000 T JGadget::TVector<void*, JGadget::TAllocator<void*> >::Insert_raw(void**, unsigned long)
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::DestroyElement_(void**, void**)
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::DestroyElement_all_()
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::set(void**)
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::TDestructed_deallocate_(JGadget::TAllocator<void*>&, void**)
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::TDestructed_deallocate_(JGadget::TAllocator<void*>&, void**)
+00000000 n JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::TDestructed_deallocate_(JGadget::TAllocator<void*>&, void**)
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::~TDestructed_deallocate_()
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::~TDestructed_deallocate_()
+00000000 n JGadget::TVector<void*, JGadget::TAllocator<void*> >::TDestructed_deallocate_::~TDestructed_deallocate_()
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::end()
+         U JKRHeap::getFreeSize()
+         U JKRHeap::sCurrentHeap
+00000000 W JKRHeap::getCurrentHeap()
+         U JKRHeap::setErrorHandler(void (*)(void*, unsigned long, int))
+         U JKRHeap::getTotalFreeSize()
+         U JKRHeap::becomeCurrentHeap()
+         U JKRHeap::destroy()
+         U JKRHeap::sRootHeap
+         U JKRTask::create(int, int, unsigned int, JKRHeap*)
+         U JKRTask::request(void (*)(void*), void*, void*)
+00000000 r JStudio::fvb::data::PARAGRAPH_DATA
+00000000 r JStudio::stb::data::BLOCK_NONE
+00000000 r JStudio::stb::data::BLOCK_ACTOR
+00000000 r JStudio::stb::data::BLOCK_LIGHT
+00000000 r JStudio::stb::data::BLOCK_SOUND
+00000000 r JStudio::stb::data::BLOCK_CAMERA
+00000000 r JStudio::stb::data::BLOCK_MESSAGE
+00000000 r JStudio::stb::data::BLOCK_PARTICLE
+00000000 r JStudio::stb::data::BLOCK_AMBIENTLIGHT
+00000000 r JStudio::stb::data::guBit_TSequence_type
+00000000 r JStudio::stb::data::BLOCK_FOG
+00000000 W JSULink<DvdThreadCommand>::~JSULink()
+00000000 W JSULink<DvdThreadCommand>::~JSULink()
+00000000 n JSULink<DvdThreadCommand>::~JSULink()
+00000000 W Delegate<System>::invoke()
+00000000 W Delegate<System>::Delegate(System*, void (System::*)())
+00000000 W Delegate<System>::Delegate(System*, void (System::*)())
+00000000 n Delegate<System>::Delegate(System*, void (System::*)())
+         U GameFlow::GameFlow()
+00000000 r JMessage::data::gcTagBegin
+00000000 W JUTVideo::getManager()
+         U JUTVideo::setRenderMode(_GXRenderModeObj const*)
+         U JUTVideo::setPostRetraceCallback(void (*)(unsigned long))
+         U JUTVideo::sManager
+         U PSSystem::spSceneMgr
+00000000 W PSSystem::getSceneMgr()
+00000000 W PSSystem::validateSceneMgr(PSSystem::SceneMgr*)
+         U PSSystem::SysIF::mainLoop()
+         U PSSystem::spSysIF
+00000000 W PSSystem::SceneMgr::getScene()
+         U Resource::Mgr2D::init(JKRHeap*)
+         U DvdStatus::isErrorOccured()
+         U DvdStatus::draw()
+         U DvdStatus::update()
+         U DvdStatus::DvdStatus()
+         U DvdThread::sendCommand(DvdThreadCommand*)
+         U DvdThread::sync(DvdThreadCommand*, DvdThread::ESyncBlockFlag)
+         U DvdThread::syncAll(DvdThread::ESyncBlockFlag)
+         U DvdThread::DvdThread(unsigned long, int, int)
+00000000 W IDelegate::IDelegate()
+00000000 W IDelegate::IDelegate()
+00000000 n IDelegate::IDelegate()
+         U JFWSystem::mainThread
+         U JFWSystem::CSetUpParam::renderMode
+         U JFWSystem::CSetUpParam::fifoBufSize
+         U JFWSystem::CSetUpParam::maxStdHeaps
+         U JFWSystem::CSetUpParam::sysHeapSize
+         U JFWSystem::CSetUpParam::aramAudioBufSize
+         U JFWSystem::CSetUpParam::aramGraphBufSize
+         U JFWSystem::init()
+         U SysTimers::_stop(char*)
+         U SysTimers::_start(char*, bool)
+         U SysTimers::SysTimers()
+00000000 W JUTConsole::isOutputConsole() const
+00000000 W JUTConsole::getOutput() const
+         U JUTConsoleManager::drawDirect(bool) const
+00000000 T JMath::TSinCosTable<1024, float>::cosShort(short) const
+00000000 T JMath::TSinCosTable<1024, float>::sinShort(short) const
+00000000 T JMath::TSinCosTable<2048, float>::cosShort(short) const
+00000000 T JMath::TSinCosTable<2048, float>::sinShort(short) const
+00000000 T JMath::TSinCosTable<5096, float>::cosShort(short) const
+00000000 T JMath::TSinCosTable<5096, float>::sinShort(short) const
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::GetSize_extend_(unsigned int) const
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::size() const
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::begin() const
+00000000 W JGadget::TVector<void*, JGadget::TAllocator<void*> >::capacity() const
+00000000 W std::__copy_backward<void*, 1>::copy_backward(void**, void**, void**)
+00000000 W std::__uninitialized_copy_helper<void*, 0, 1>::uninitialized_copy(void**, void**, void**)
+         U operator new(unsigned int)
+         U operator new(unsigned int, JKRHeap*, int)
+00000000 W void** std::copy_backward<void*>(void**, void**, void**)
+00000000 W void** std::uninitialized_copy<void*>(void**, void**, void**)
+00000000 V vtable for Delegate<System>
+00000000 V vtable for IDelegate
+00000000 V vtable for PSM::Factory

@@ -1,0 +1,1 @@
+Audio decoder: 169 independent vector/bounds checks passed.

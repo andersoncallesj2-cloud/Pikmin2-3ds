@@ -1,0 +1,19 @@
+{
+  "src/sysGCU/section.cpp": {
+    "original_file_sha256": "2498a4ff7e9701ce9faaecea9e6476aca36167572c8474b5bb681f32e613b2a7",
+    "extracted_functions_sha256": {
+      "Section::init": "75cea6105ca1ea7b5971c67850bf8cc3d9bff1de2996e4fc5c853ed30969f036",
+      "Section::loading": "7ff966e0a2c0cceca294b44dab408112695f8b06f7248a98f74f8ac00ee3711b",
+      "Section::fadeIn": "6603d64f315dafaec07424c21d981cfcd93e32e0e1a310e3ceb82099bc3e9759",
+      "Section::main": "68c885c5907283a42001a832a5c735d78a437d8f450ba557f5ba799e35fb57ec",
+      "Section::fadeOut": "3c2fc7158bcf770178adc8f00f1523a192c48c7b7f7e8917cec977b1dd9244ff",
+      "Section::run": "64a9bd5338438d1eb91e1110c8a228be1c899c7d8a523677fb29f35eaf2589e0",
+      "Section::beginFrame": "ee746a5844f5e6c1f118e4a34e371e140cda3cceada6fb79563409ed47764399",
+      "Section::endFrame": "58b9e6cce1b4b0467a565e8c8840ff09919edb4e1d099a92567fbbd3939337b4",
+      "Section::beginRender": "e2e8adce4537a7d9613919c39fbd1980414f0da5f6dbfe524a097137243efc5b",
+      "Section::endRender": "98743e567cf81210c810970a9126b91acc44bc69f83e4f508a7c82d7f88ecd3c",
+      "Section::update": "02965cf2f8cce127c9d0212220f138665136bb897e87c44173a7d26f40ae2f45",
+      "Section::draw": "e594e53e682733995bc6d7136b75f0e1b441a79aab703e45afff5d49b51d1cf4"
+    }
+  }
+}

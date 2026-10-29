@@ -1,0 +1,10 @@
+{
+  "source": "src/sysGCU/graphics.cpp",
+  "source_sha256": "92e149d5b25ca9d24c5fde4d6cfb455a6501c3d770bb13d800871ab86d532322",
+  "method_bodies_sha256": "3ee3835d7ce1dbe80af9f2781fd605f39b631631a6c534149e36d4d6971d9f73",
+  "routines": [
+    "Graphics::drawLine(Vector3f&,Vector3f&)",
+    "Graphics::drawSphere(Vector3f&,f32)"
+  ],
+  "adaptations": "Minimal type shim; scalar SRT and PSMTXConcat; direct GX lines translated into Citro3D triangle ribbons. No textures/materials/J3D yet."
+}

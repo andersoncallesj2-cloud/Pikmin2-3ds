@@ -1,0 +1,45 @@
+{
+  "artifact": "/workspace/Pikmin2-3ds/port3ds/pikmin2-port.3dsx",
+  "sha256": "3083120a92283cd4d617687b509bbb321413d9f467fba3f4725ceb4789726328",
+  "target": "Final default: original Section lifecycle diagnostic, not replacement AI sandbox",
+  "emulator": "Official Azahar 2126.2 Linux AppImage under Xvfb and llvmpipe OpenGL 4.5 in Debian13 isolated container",
+  "passes": [
+    "Launches into phase 2 original Section loop with advancing frame count",
+    "Original debug sphere graphics visible above checkerboard ground",
+    "Circle-pad input changes camera focus X from0 to2.1",
+    "L button orbits the camera visibly",
+    "B hides outer original debug spheres",
+    "Y resets focus/camera",
+    "A audio request while NDSP unavailable does not hang",
+    "GX error counter remains0",
+    "START returns cleanly to emulator application list"
+  ],
+  "limitations": [
+    "No actual Pikmin 2 levels, characters or original Piki AI linked",
+    "NDSP initialization returns D880A7FA because DSP firmware absent; audio playback unverified",
+    "No physical 3DS testing",
+    "No source-game ROM provided; no asset-backed game scene validated"
+  ],
+  "screenshots": [
+    "engine-start.png",
+    "engine-camera.png",
+    "engine-toggle.png",
+    "engine-reset-audio.png",
+    "engine-exit.png"
+  ],
+  "not_carried_forward": "Earlier port-* screenshots and runtime-report.json validate a removed replacement AI harness, not this final artifact.",
+  "cia": {
+    "sha256": "ddb3213a20369faa96605bb53c3f3675f7eae6fbb59fe8fad63e7c37fefef712",
+    "title_id": "000400000F2A7200",
+    "install_result": "Azahar CLI reported Installed CIA successfully",
+    "launch_result": "Launched installed SD title content and rendered original Section phase2 scene with three original wire spheres and GX errors0",
+    "controls_result": "CircleRight moved focus from zero to a nonzero value, R orbited camera, B hid outer spheres, A missing-DSP audio did not hang, START returned cleanly to application list",
+    "audio": "NDSP D880A7FA; firmware unavailable; no audible playback verified",
+    "screenshots": [
+      "engine-cia-start.png",
+      "engine-cia-controls.png",
+      "engine-cia-exit.png"
+    ],
+    "log": "engine-cia-runtime.log"
+  }
+}

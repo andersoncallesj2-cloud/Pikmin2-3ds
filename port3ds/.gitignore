@@ -1,0 +1,10 @@
+build/
+*.o
+*.elf
+*.map
+*.smdh
+*.3dsx
+*.cia
+*.bnr
+!assets/menu.bnr
+__pycache__/
