@@ -1,5 +1,8 @@
 # Pikmin 2: original-engine bring-up on 3DS
 
+**Hardware update:** the user reports no 3D rendering and a possible hang on New 3DS XL. This baseline is preserved, not hardware-verified. Use [HW01 diagnostics](../docs/TESTING.md) before further engine integration.
+
+
 This milestone **boots original engine lifecycle code on 3DS**, with original
 debug graphics, camera/game math and a ported movie-audio decoder. It is an
 engineering starting point, **not yet playable Pikmin 2**: the original boot,

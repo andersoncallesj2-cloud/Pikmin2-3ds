@@ -1,0 +1,12 @@
+# Private game dumps and locally extracted data must never enter public history.
+*.iso
+*.gcm
+*.rvz
+*.ciso
+*.wia
+*.gcz
+private/
+local-game-data/
+extracted-assets/
+output/
+__pycache__/

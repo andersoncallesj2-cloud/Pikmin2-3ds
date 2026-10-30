@@ -1,6 +1,28 @@
+# Pikmin 2 native New 3DS port — hardware rendering investigation
+
+**The previous viewer fails to render on the user's New 3DS XL and may freeze. This is NOT fixed or hardware-verified yet.** Major engine integration is paused at the hardware gate. This project aims to run original Pikmin 2 engine/gameplay code, not recreate the game.
+
+## Download the new HW01 diagnostic
+
+**[CIA](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-hwdiag.cia)** · **[3DSX](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-hwdiag.3dsx)** · **[Exact test instructions](docs/TESTING.md)**
+
+1. Copy the 3DSX to `/3ds/pikmin2-hwdiag/` and open it in Homebrew Launcher, or install the separate diagnostic CIA.
+2. It starts with magenta clear colour. Check that the bottom heartbeat advances.
+3. Use **R/Right** to test triangle, cube, checkerboard, spheres, then full scene; wait five seconds per stage. **L/Left** goes back.
+4. **X** switches colour paths; **A** toggles depth. **START** exits. If a stage freezes, stop rather than repeating it.
+5. Send the first failing test, launch format, a photo of both screens and `/3ds/pikmin2-hwdiag/hardware.log` if available. Do not send game data for this test.
+
+HW01 adds real API checks, measured queue-busy time, a nonblocking queue polling path and independently flushed bottom text. A CPU-side PASS is not proof of visible rendering. Recovery from a genuinely wedged GPU/driver is not guaranteed. No ISO or firmware is required by this diagnostic.
+
+The final CIA installs and runs all six stages in Azahar; colour/depth switches and clean START exit work. Physical New 3DS testing is **pending**. The original viewer/source/binaries remain below as an unchanged baseline.
+
+[Port status](PORT_STATUS.md) · [Open Nectar/original-engine audit](docs/ENGINE_INTEGRATION.md) · [Build and private ISO/RVZ/CISO workflow plan](docs/BUILDING.md)
+
+---
+
 # Pikmin 2 original-engine port: first boot milestone
 
-**[Download the working CIA](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-port.cia)** · **[Download the Homebrew Launcher 3DSX](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-port.3dsx)**
+**[Archived viewer CIA — hardware issue](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-port.cia)** · **[Download the Homebrew Launcher 3DSX](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-port.3dsx)**
 
 This first milestone boots the original Section lifecycle, original debug graphics and camera/game math on 3DS, with a ported THP movie-audio decoder. **It is not playable Pikmin 2 yet.** Original BootSection, title, levels, Pikmin AI and JAudio are not linked. No replacement gameplay/AI engine is used by this build.
 
@@ -24,6 +46,6 @@ Five complete original engine bootstrap translation units also compile to ARM ob
 
 ## Windows tools
 
-[Native Windows bundle](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-builder-windows-native.zip). No Docker required. An updated tutorial GUI with an obvious `output` folder is being added.
+[Native Windows bundle](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-builder-windows-native.zip). No Docker required. The older Windows bundle is preserved; it does not package the new HW01 diagnostic. Use the direct HW01 downloads above for this test.
 
 The bundle preserves all 2,151 uploaded original source files. [Original source license](port3ds/LICENSE.source.md). No game ROM or Nintendo assets are included in the diagnostic.

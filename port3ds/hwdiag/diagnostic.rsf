@@ -1,0 +1,22 @@
+BasicInfo:
+  Title: "P2HWDiag"
+  CompanyCode: "00"
+  ProductCode: "CTR-P-P2HD"
+  ContentType: Application
+  Logo: Homebrew
+TitleInfo:
+  UniqueId: 0xF2A73
+  Category: Application
+Option:
+  UseOnSD: true
+  EnableCompress: true
+  FreeProductCode: true
+  EnableCrypt: false
+SystemControlInfo:
+  SaveDataSize: 0KB
+  RemasterVersion: 0
+  StackSize: 0x40000
+AccessControlInfo:
+  FileSystemAccess:
+    - DirectSdmc
+    - DirectSdmcWrite

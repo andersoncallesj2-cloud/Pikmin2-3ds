@@ -1,0 +1,27 @@
+{
+  "build": "HW01",
+  "emulator": "Azahar 2126.2, Xvfb/Mesa software OpenGL",
+  "hardware": "PENDING; previous viewer failed on user New 3DS XL, likely froze; no hardware success claim",
+  "cia_title": "000400000F2A7300",
+  "tests": {
+    "3dsx": "Final build booted; six stages visually inspected; correct START key M in emulator exits",
+    "cia": "Final build installed and launched; all six selections logged; clear/triangle/full scene visually checked; fixed-colour and depth switches exercised; START exits"
+  },
+  "api_checks": "Expected checked setup/registration/flush/frame calls pass in emulator; no missing-completion event observed",
+  "limits": [
+    "No physical console test",
+    "No real GPU-hang recovery test; >2s reporting path not triggered in emulator",
+    "No game assets or full gameplay tested",
+    "Some Xvfb root captures had OpenGL damage artifacts; direct-window full-scene/exit captures were used"
+  ],
+  "artifacts": {
+    "pikmin2-hwdiag.cia": {
+      "sha256": "68e86d41f11c89ede9cb7edb514ea4c6c93392fccc54d64b58b31e7b8252fd05",
+      "bytes": 159168
+    },
+    "pikmin2-hwdiag.3dsx": {
+      "sha256": "4e775c20bd49ba21ed3476cba53fbc0a3e5a4d5d5645a9a001c681440f75635e",
+      "bytes": 166484
+    }
+  }
+}

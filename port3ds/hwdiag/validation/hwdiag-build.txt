@@ -1,0 +1,4 @@
+main.c
+linking pikmin2-hwdiag.elf
+built ... pikmin2-hwdiag.3dsx
+/workspace/Pikmin2-3ds/tools/container/makerom -f cia -o pikmin2-hwdiag.cia -rsf diagnostic.rsf -target t -elf pikmin2-hwdiag.elf -icon pikmin2-hwdiag.smdh -banner ../assets/menu.bnr -desc app:4
