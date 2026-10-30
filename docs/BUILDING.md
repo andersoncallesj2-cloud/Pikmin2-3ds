@@ -21,7 +21,7 @@ physical New 3DS rendering remain unverified.
    projectPiki `config/GPVE01/config.yml`:
    `90d328bf8f190c90472e8c19e7e53c6ad0fe0d1a`.
    This is a configured allowlist, not a claim of real-disc testing. Other IDs,
-   revisions, modified executables, malformed filesystems and compressed images
+   revisions, modified executables, malformed filesystems and unsupported formats
    fail explicitly. Do not change checksums merely to force a build to pass.
 5. Run:
 
@@ -34,6 +34,16 @@ physical New 3DS rendering remain unverified.
    ```sh
    python tools/build.py --iso "/path/to/Pikmin2.iso" --target both --work-dir build/my-private-test --makerom /path/to/makerom
    ```
+
+   For RVZ, install DolphinTool (bundled with Dolphin or packaged as
+   `dolphin-tool` on Debian) and use:
+
+   ```sh
+   python tools/build.py --iso "/path/to/Pikmin2.rvz" --target cia --work-dir build/my-rvz-test --dolphin-tool "/path/to/DolphinTool"
+   ```
+
+   On Windows supply the path to `DolphinTool.exe`. A real dump is still needed
+   to establish compatibility; the RVZ preparation test uses generated data.
 
 6. Read the absolute **OUTPUT** paths printed on success. In the second example:
 
@@ -65,6 +75,13 @@ downloadable Windows builder EXE does **not** include `tools/build.py`.
 
 ## What the stages actually do
 
+- **RVZ preparation, if needed:** inspect magic, header checksum, recorded size
+  and bounded GameCube expansion size; check free space; query Dolphin's JSON
+  game ID/revision before conversion. Invoke the installed converter locally,
+  without scrubbing, into `prepared/disc.iso`. Record converter/input/output
+  hashes and confirm the source hash and metadata are unchanged. The expanded
+  ISO must still pass the full executable/FST/asset checks below. Failed owned
+  partial outputs are removed; original dumps and previous work are preserved.
 - **ISO validation:** open read-only, verify GameCube magic, game ID/disc/revision,
   bounded DOL extent/checksum, complete FST node/name/directory/file bounds, and
   presence/size of root `opening.bnr`. This is selective validation, not a full
@@ -99,11 +116,12 @@ build outputs contain copyrighted game data, including the CIA and 3DSX: keep
 them local/private. Never force-add them or publish them as project downloads.
 The public smoke-build binaries contain only explicitly labeled synthetic data.
 
-**RVZ and CISO support is planned, not implemented by this CLI.** Convert a private
-RVZ to a separate ISO locally with a compatible installed DolphinTool before
-building. Preserve the input; do not rename a compressed file to `.iso`. A future
-adapter will inspect magic, create an owned temporary conversion workspace and
-record converter versions/checksums. CISO variants must be identified explicitly;
+**RVZ preparation is implemented; CISO remains unsupported.** RVZ uses an installed
+DolphinTool, never a downloaded game/conversion service. Do not rename a compressed
+file to `.iso`. The private expanded ISO is retained in this build's ignored
+`prepared/` directory for diagnosis; account for roughly 1.4 GiB of extra disk
+space for a full GameCube image. Dolphin 2503 was tested on a synthetic RVZ only.
+CISO variants must be identified explicitly;
 GameCube/Wii sparse CISO and PSP CSO are not interchangeable. No variant has been
 tested here yet.
 
@@ -120,6 +138,10 @@ Host tests require no SDK and use synthetic data:
 ```sh
 PYTHONPATH=tools:tests python3 -m unittest discover -s tests -v
 ```
+
+The suite currently has 18 tests, including RVZ size/checksum/missing-converter
+failure handling. The separate [Dolphin RVZ checks](../port3ds/iso_prototype/validation/rvz/README.md)
+use actual conversion on synthetic data; they are not real-disc validation.
 
 With the SDK active, run two actual compilations/packages using generated data:
 

@@ -50,7 +50,18 @@ The new independent test target is `port3ds/hwdiag/` with title F2A73 / build HW
   to camera controls and exits in Azahar. [Evidence](port3ds/iso_prototype/validation/README.md).
   Public test builds contain no real game assets. Physical hardware is untested.
 - Updated the no-Docker SDK tutorial, output paths, revision limits and privacy
-  rules. RVZ/CISO adapters and genuine game model conversion remain unimplemented.
+  rules. Genuine game model conversion remains unimplemented.
+
+## RVZ follow-up
+
+- Added magic-based RVZ preparation through an installed DolphinTool, including
+  header/size/free-space checks, pre-conversion ID/revision checks, private ISO
+  staging and original-file SHA-256 preservation checks. CISO remains unsupported.
+- Host suite now has 18 passing tests. Actual Dolphin 2503 conversion recovers
+  the synthetic disc byte-for-byte. No user dump has been downloaded or tested.
+- The supplied OneDrive folder is blocked by the environment's HTTP allowlist
+  (CONNECT 403). OneDrive domain additions were saved for user review in the
+  environment configuration. No sharing/authentication failure has been proven.
 
 ## Evidence levels
 

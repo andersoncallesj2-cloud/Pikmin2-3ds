@@ -11,6 +11,7 @@ import subprocess
 import tempfile
 
 import disc_asset
+import disc_image
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -45,7 +46,7 @@ def verify_cia(path, asset):
             'signature_scope': 'homebrew; not Nintendo-signed'}
 
 
-def run(iso, target='cia', work_dir=None, makerom=None, revisions=None):
+def run(iso, target='cia', work_dir=None, makerom=None, revisions=None, dolphin_tool=None):
     if target not in ('cia', '3dsx', 'both'):
         raise ValueError('Target must be cia, 3dsx or both')
     iso = Path(iso).resolve()
@@ -98,6 +99,15 @@ def run(iso, target='cia', work_dir=None, makerom=None, revisions=None):
 
     print('PIKMIN 2 3DS BUILDER — resource prototype, no gameplay', flush=True)
     try:
+        with iso.open('rb') as source:
+            magic = source.read(4)
+        if magic == b'RVZ\x01':
+            stage = 'RVZ Preparation'
+            iso, preparation = disc_image.prepare_rvz(iso, work,
+                disc_asset.REVISIONS if revisions is None else revisions, dolphin_tool)
+            report['input_preparation'] = preparation
+            passed(stage, **preparation)
+            stage = 'ISO Validation'
         banner, identity = disc_asset.extract(iso, revisions)
         report['disc'] = identity
         passed(stage, disc_id=identity['disc_id'], revision=identity['revision_name'], dol_sha1=identity['dol_sha1'])
@@ -197,9 +207,10 @@ def main():
     p.add_argument('--target', choices=['cia', '3dsx', 'both'], default='cia')
     p.add_argument('--work-dir', type=Path)
     p.add_argument('--makerom')
+    p.add_argument('--dolphin-tool', help='Installed DolphinTool executable for RVZ input')
     args = p.parse_args()
     try:
-        run(args.iso, args.target, args.work_dir, args.makerom)
+        run(args.iso, args.target, args.work_dir, args.makerom, dolphin_tool=args.dolphin_tool)
     except (OSError, ValueError, UnicodeError, struct.error, subprocess.CalledProcessError) as exc:
         p.exit(1, f'Build failed: {exc}\n')
 

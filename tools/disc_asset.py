@@ -66,7 +66,7 @@ def extract(path, revisions=None):
 
         h = read(0, 0x440)
         if word(h, 0x1c) != 0xc2339f3d:
-            raise ValueError('Expected an uncompressed GameCube ISO/GCM; RVZ/CISO are not accepted by this first builder')
+            raise ValueError('Expected a GameCube ISO/GCM; use build.py with DolphinTool for RVZ. CISO variants remain unsupported')
         disc_id = h[:6].decode('ascii', errors='replace')
         key = (disc_id, h[6], h[7])
         if key not in revisions:

@@ -1,0 +1,10 @@
+{
+  "test_data": "synthetic only, not a real game dump",
+  "source_bytes": 12288,
+  "source_iso_sha256": "2b1e34648a73c799f6f41f0a7cfb6984f10dbf739b84fa440c00bd0898649b8a",
+  "roundtrip_iso_sha256": "2b1e34648a73c799f6f41f0a7cfb6984f10dbf739b84fa440c00bd0898649b8a",
+  "fixture_rvz_bytes": 36132,
+  "dolphin_package": "2503+dfsg-1+deb13u1",
+  "real_dump_access": "blocked by cloud network policy; OneDrive not accessed",
+  "hardware_tested": false
+}

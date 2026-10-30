@@ -1,0 +1,29 @@
+{
+  "test_data": "synthetic only, not a game dump",
+  "iso_bytes_identical": true,
+  "rvz_bytes_preserved": true,
+  "actual_dolphin_conversion": true,
+  "actual_banner_extraction": true,
+  "builder_preparation_integrated": true,
+  "compiler_in_this_container": "absent; expected explicit failure; existing SDK builds tested separately",
+  "evidence": {
+    "format": "RVZ",
+    "input_bytes": 36132,
+    "input_sha256": "31cd67ba1f9b244b4a29f10eedfac8b5b83be2298a17701379c93bc1d7981ebd",
+    "source_preserved": true,
+    "expanded_bytes": 12288,
+    "iso_sha256": "2b1e34648a73c799f6f41f0a7cfb6984f10dbf739b84fa440c00bd0898649b8a",
+    "converter_sha256": "c46183edb88ba2b8e5dc74786728b057543aaa3efa27e1eddcf9b221be3bbda3",
+    "dolphin_header": {
+      "block_size": 131072,
+      "compression_level": 5,
+      "compression_method": "Zstandard",
+      "country": "Japan",
+      "game_id": "GPVE01",
+      "internal_name": "",
+      "region": "NTSC-J",
+      "revision": 0
+    },
+    "log": "/data/rvz-validation/module-check/prepared/dolphin-conversion.log"
+  }
+}

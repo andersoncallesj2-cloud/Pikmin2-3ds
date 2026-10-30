@@ -58,8 +58,10 @@ success reports; the visible runtime checks/screenshots supply app observations.
 
 - No actual GPVE01 disc or genuine extracted image has been tested.
 - No original JKR/J3D asset path, level, model, character logic or gameplay added.
-- RVZ/CISO conversion and the full Windows builder workflow remain untested or
-  unimplemented as described in the build tutorial.
+- These original package tests used raw ISO fixtures. A later
+  [RVZ preparation check](rvz/README.md) uses real Dolphin conversion of synthetic
+  data. CISO and the full Windows builder workflow remain untested/unimplemented
+  as described in the build tutorial.
 - Physical New 3DS rendering, clean exit, stability, memory budget and performance
   are **unverified**. The user's earlier no-scene/freeze report remains open.
 

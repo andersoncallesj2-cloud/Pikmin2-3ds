@@ -18,7 +18,9 @@ Initially the validator permits only GPVE01 disc 0/revision 0 with the known
 projectPiki executable checksum. **No real game dump has been tested here.**
 Two synthetic-fixture builds passed real ARM compilation/CIA packaging, and the
 installed CIA renders in Azahar. The production command rejects those fixtures;
-there is no checksum bypass. RVZ/CISO conversion remains unimplemented.
+there is no checksum bypass. **RVZ input now uses an installed DolphinTool**;
+pass `--dolphin-tool "/path/to/DolphinTool"` if it is not on PATH. CISO remains
+unsupported. RVZ conversion has been checked with synthetic data only.
 
 **[Build tutorial and output locations](docs/BUILDING.md)** ·
 **[Runtime details](port3ds/iso_prototype/README.md)** ·
