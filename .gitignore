@@ -10,3 +10,11 @@ local-game-data/
 extracted-assets/
 output/
 __pycache__/
+# User-supplied character models and converted private test data.
+*.obj
+*.mtl
+*.p2mesh
+*.fbx
+*.glb
+*.gltf
+private-models/
