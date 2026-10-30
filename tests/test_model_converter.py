@@ -42,6 +42,13 @@ class ModelTests(unittest.TestCase):
             module.convert(d / 'model.obj', d / 'out')
             self.assertEqual((d / 'out').read_bytes()[36:40], b'\xff\x00\x00\xff')
 
+    def test_optional_flat_light(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp)
+            (d / 'model.obj').write_text(OBJ)
+            module.convert(d / 'model.obj', d / 'out', flat_light=True)
+            self.assertEqual((d / 'out').read_bytes()[36:40], bytes([135, 135, 135, 255]))
+
     def test_bad_inputs_do_not_create_output(self):
         for contents in [OBJ.replace('f 1 2 3', 'f 0 2 3'), OBJ.replace('v -1', 'v nan'),
                          OBJ.replace('f 1 2 3', 'f 999 2 3'), 'mtllib ../secret.mtl\n' + OBJ,

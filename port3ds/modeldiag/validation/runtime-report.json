@@ -1,0 +1,31 @@
+{
+  "build": "HW02",
+  "asset": "User-supplied Olimar OBJ and MTL; tested privately; no model data distributed",
+  "source_vertices": 1195,
+  "triangles": 2210,
+  "draw_vertices_model_plus_scene": 16710,
+  "textures": "MTL references orima_565.png / helkan_8ia.png; no local PNG files available, untextured shading only",
+  "verified": [
+    "ARM build",
+    "Windows bundled CPython prepare script under Wine; converted bytes equal host output",
+    "3DSX loads 2210-triangle private OBJ conversion next to three spheres",
+    "CIA installed/launched, model reload and quarter-turn work",
+    "START exits",
+    "Five host converter/loader tests pass"
+  ],
+  "not_verified": [
+    "Real New 3DS rendering or performance",
+    "Textures/transparency/animation",
+    "Original game-engine resource/character loading"
+  ],
+  "artifacts": {
+    "pikmin2-modeldiag.cia": {
+      "sha256": "10b0f927eb01c948af10bda7576eafba4f516f3679eb5073d0e38a5741633c36",
+      "bytes": 161216
+    },
+    "pikmin2-modeldiag.3dsx": {
+      "sha256": "4695fd06b2a1d8bb61c8e521b6159876b93a7904c48e920c469968cc18c0bbc9",
+      "bytes": 169452
+    }
+  }
+}

@@ -10,6 +10,7 @@ typedef struct { float x,y,z; uint8_t r,g,b,a; } ModelVertex;
 _Static_assert(sizeof(ModelVertex)==16,"Mesh disk layout changed");
 static ModelVertex *data;
 static unsigned count;
+static float angle;
 static const char *status="not loaded";
 static uint32_t le32(const uint8_t *p)
 { return (uint32_t)p[0]|(uint32_t)p[1]<<8|(uint32_t)p[2]<<16|(uint32_t)p[3]<<24; }
@@ -43,11 +44,15 @@ done:
 }
 void model_draw(void)
 {
+    float sine=sinf(angle),cosine=cosf(angle);
     for(unsigned i=0;i<count;i+=3) {
         ModelVertex a=data[i],b=data[i+1],c=data[i+2];
         uint32_t rgba=(uint32_t)a.r<<24|(uint32_t)a.g<<16|(uint32_t)a.b<<8|a.a;
-        port_gfx_triangle((PortVec3){a.x,a.y,a.z+3},(PortVec3){b.x,b.y,b.z+3},(PortVec3){c.x,c.y,c.z+3},rgba);
+        port_gfx_triangle((PortVec3){a.x*cosine+a.z*sine,a.y,-a.x*sine+a.z*cosine+3},
+                          (PortVec3){b.x*cosine+b.z*sine,b.y,-b.x*sine+b.z*cosine+3},
+                          (PortVec3){c.x*cosine+c.z*sine,c.y,-c.x*sine+c.z*cosine+3},rgba);
     }
 }
+void model_turn(void) { angle+=1.5707963f; if(angle>=6.2831852f)angle=0; }
 const char *model_status(void) { return status; }
 unsigned model_triangles(void) { return count/3; }

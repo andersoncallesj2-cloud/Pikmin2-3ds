@@ -14,7 +14,7 @@ import zlib
 MAX_TRIANGLES = 6000
 
 
-def convert(source, destination, up='y', height=2.4):
+def convert(source, destination, up='y', height=2.4, flat_light=False):
     source = Path(source)
     if source.stat().st_size > 16 * 1024 * 1024:
         raise ValueError('OBJ exceeds the 16 MiB input limit')
@@ -84,11 +84,23 @@ def convert(source, destination, up='y', height=2.4):
     origin = (lo[0]/2 + hi[0]/2, lo[1], lo[2]/2 + hi[2]/2)
     payload = bytearray()
     for triangle in triangles:
+        positions = []
         for i in triangle[:3]:
             position = tuple((vertices[i][k] - origin[k]) * scale for k in range(3))
             if not all(math.isfinite(x) for x in position) or max(abs(x) for x in position) > 20:
                 raise ValueError('Extreme aspect ratio exceeds the diagnostic bounds')
-            payload.extend(struct.pack('<3f4B', *position, *triangle[3]))
+            positions.append(position)
+        color = triangle[3]
+        if flat_light:
+            u = [positions[1][k] - positions[0][k] for k in range(3)]
+            v = [positions[2][k] - positions[0][k] for k in range(3)]
+            normal = (u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0])
+            length = math.sqrt(sum(x*x for x in normal))
+            # Baked diagnostic lighting only; this does not implement GX lighting.
+            diffuse = max(0, sum(a*b for a, b in zip(normal, (-.35, .8, .45))) / length) if length > 1.e-10 else 0
+            color = tuple(round(c * min(1, .3 + .7*diffuse)) for c in color[:3]) + (255,)
+        for position in positions:
+            payload.extend(struct.pack('<3f4B', *position, *color))
     header = struct.pack('<4sIIIII', b'P2M1', 1, len(triangles) * 3, 16, len(payload), zlib.crc32(payload))
     destination = Path(destination)
     if destination.exists():
@@ -106,9 +118,10 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--up', choices=['y', 'z'], default='y')
     parser.add_argument('--height', type=float, default=2.4)
+    parser.add_argument('--flat-light', action='store_true', help='Bake simple face shading for an untextured preview')
     args = parser.parse_args()
     try:
-        n = convert(args.obj, args.output, args.up, args.height)
+        n = convert(args.obj, args.output, args.up, args.height, args.flat_light)
     except (OSError, ValueError, UnicodeError) as exc:
         parser.exit(1, f'Conversion failed: {exc}\n')
     print(f'Converted {n} triangles to {args.output}; static mesh, material colors only, no textures/animation.')

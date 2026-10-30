@@ -58,12 +58,14 @@ int main(void)
         if(pressed&(KEY_L|KEY_DLEFT)) { test=test==1?7:test-1; interleaved=test>=4; depth=test>=3; changed=true; }
         if(pressed&KEY_X) { interleaved=!interleaved; changed=true; }
         if(pressed&KEY_A) { depth=!depth; changed=true; }
+        if(test==7 && (pressed&KEY_B))model_turn();
         if(test==7 && (changed || (pressed&KEY_Y))) {
             model_load("sdmc:/3ds/pikmin2-modeldiag/olimar.p2mesh"); changed=true;
         }
         PortMtx34 view={{1,0,0,0},{0,1,0,0},{0,0,1,0}};
         if(test>=3) {
             PortVec3 eye={0,10,13},target={0,0,0},up={0,1,0};
+            if(test==7) { eye=(PortVec3){5,7,12}; target=(PortVec3){0,1,1}; }
             port_math_camera(view,&eye,&up,&target);
         }
         diag_options(test,interleaved,depth);
@@ -97,7 +99,7 @@ int main(void)
             printf("%-37.37s\n",strlen(s->last_error)>31?s->last_error+31:"");
             printf("SD log: %-28s\n",log_file?"hardware.log OPEN":"unavailable");
             printf("R/Right next | L/Left previous       \nX color path | A depth | START exit  \n");
-            if(test==7)printf("Model: %-29.29s\n%u triangles | Y: reload file\n",model_status(),model_triangles());
+            if(test==7)printf("Model: %-29.29s\n%u tris | B: turn | Y: reload\n",model_status(),model_triangles());
             else printf("PASS = API check; NOT visible proof. \nPlease report first blank test.      \n");
             gfxFlushBuffers(); /* Bottom HUD must update even if the GPU queue is stuck. */
             changed=false;

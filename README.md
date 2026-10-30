@@ -2,6 +2,16 @@
 
 **The previous viewer fails to render on the user's New 3DS XL and may freeze. This is NOT fixed or hardware-verified yet.** Major engine integration is paused at the hardware gate. This project aims to run original Pikmin 2 engine/gameplay code, not recreate the game.
 
+## Optional Olimar model test (HW02)
+
+**[Windows preparation kit](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-model-test-windows.zip)** · **[CIA](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-modeldiag.cia)** · **[Instructions](port3ds/modeldiag/README.md)**
+
+The supplied Olimar OBJ/MTL (2,210 triangles) renders privately beside the three spheres in Azahar. It is currently untextured: original texture PNG files are not available to the converter, and helmet transparency/animation are not implemented. Real hardware remains unverified.
+
+The public kit contains **no model data**. Extract it, drag your OBJ onto `Prepare Olimar.cmd`, copy the contents of `sd-card` onto your SD card, and select test 7 with R. B turns the model; Y reloads; START exits. Both CIA and 3DSX need the converted SD file. No Docker or separate Python installation is required.
+
+This is an additional static-model test, not original J3D/character gameplay integration. HW01 and the hardware gate remain unchanged.
+
 ## Download the new HW01 diagnostic
 
 **[CIA](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-hwdiag.cia)** · **[3DSX](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-hwdiag.3dsx)** · **[Exact test instructions](docs/TESTING.md)**

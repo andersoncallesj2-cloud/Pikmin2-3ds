@@ -17,4 +17,5 @@ __pycache__/
 *.fbx
 *.glb
 *.gltf
+*.dae
 private-models/
