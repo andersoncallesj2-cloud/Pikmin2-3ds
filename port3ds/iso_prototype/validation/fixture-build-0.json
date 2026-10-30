@@ -1,0 +1,87 @@
+{
+  "prototype": "ISO-derived opening.bnr resource probe",
+  "stages": {
+    "ISO Validation": {
+      "status": "PASS",
+      "disc_id": "GPVE01",
+      "revision": "SYNTHETIC TEST FIXTURE, not a game revision",
+      "dol_sha1": "d6e484f6492ff75a5a989e37682c518597d07ea6"
+    },
+    "Asset Extraction": {
+      "status": "PASS",
+      "source": "opening.bnr",
+      "bytes": 6496,
+      "sha256": "b2e7835f8b5e3e587c56d7b6dad0b66691b11a9e6dcfae2e1151bcda1ab4c1b1"
+    },
+    "Asset Conversion": {
+      "status": "PASS",
+      "conversion": "BE tiled RGB5A3 -> row-major RGB8, alpha on black",
+      "width": 96,
+      "height": 32,
+      "sha256": "7904870e8ac78fc4410ab9d3263c74318f27edc656b0073a7c34d144b85f4717",
+      "bytes": 9240
+    },
+    "Runtime Compilation": {
+      "status": "PASS",
+      "architecture": "ARM11/ARMv6K",
+      "original_components": "Section lifecycle, camera/game math, debug graphics",
+      "logs": "/workspace/private-build-tests/iso-final/run-0/logs/compile.log"
+    },
+    "CIA Packaging": {
+      "status": "PASS",
+      "sha256": "6c0794ab31da95f7ceb32dc27a8cd653ec3f6565a0ec6d5323c4869cea558a10",
+      "bytes": 197568,
+      "ncch_sha256": "968abde3184d10086d1d4c2fdd1ab370da2a5c06f90af48d2c1bc55dbec9c541",
+      "asset_embedded": true,
+      "section_header_hashes": "match",
+      "signature_scope": "homebrew; not Nintendo-signed"
+    }
+  },
+  "hardware": "UNVERIFIED: previous New 3DS rendering failure remains open",
+  "gameplay": "not implemented",
+  "work_dir": "/workspace/private-build-tests/iso-final/run-0",
+  "outputs": {
+    "3dsx": {
+      "path": "/workspace/private-build-tests/iso-final/run-0/output/Pikmin2-3DS.3dsx",
+      "sha256": "4aa771eff8a71fe713f242ceb5e9015fe72b41b041794567665b55b9a56ce26f",
+      "asset_embedded": true
+    },
+    "cia": {
+      "path": "/workspace/private-build-tests/iso-final/run-0/output/Pikmin2-3DS.cia",
+      "sha256": "6c0794ab31da95f7ceb32dc27a8cd653ec3f6565a0ec6d5323c4869cea558a10",
+      "bytes": 197568,
+      "ncch_sha256": "968abde3184d10086d1d4c2fdd1ab370da2a5c06f90af48d2c1bc55dbec9c541",
+      "asset_embedded": true,
+      "section_header_hashes": "match",
+      "signature_scope": "homebrew; not Nintendo-signed"
+    }
+  },
+  "disc": {
+    "disc_id": "GPVE01",
+    "disc_number": 0,
+    "revision": 0,
+    "revision_name": "SYNTHETIC TEST FIXTURE, not a game revision",
+    "dol_sha1": "d6e484f6492ff75a5a989e37682c518597d07ea6",
+    "test_fixture": true,
+    "image_bytes": 12288,
+    "asset_path": "opening.bnr",
+    "asset_bytes": 6496,
+    "asset_sha256": "b2e7835f8b5e3e587c56d7b6dad0b66691b11a9e6dcfae2e1151bcda1ab4c1b1"
+  },
+  "compiler_version": "arm-none-eabi-gcc (devkitARM) 16.1.0",
+  "runtime": {
+    "elf_sha256": "2dc3282c61259b3d8fc6cb016e6c0e09350f6095bd15716bc4ab76971d36e4da",
+    "3dsx_sha256": "4aa771eff8a71fe713f242ceb5e9015fe72b41b041794567665b55b9a56ce26f",
+    "romfs_asset_sha256": "7904870e8ac78fc4410ab9d3263c74318f27edc656b0073a7c34d144b85f4717",
+    "source_c_sha256": "a6715245d900ea8bf5ed8e3b7db685970351882c9f594b8d49a1e517a1ae604f"
+  },
+  "source_hashes": {
+    "iso_prototype/Makefile": "1d91e9b9093bcacf93c1f91b88f7785d0fc8b01fbe2f7e8f3c26bd971e118ae7",
+    "engine/original_section.cpp": "0a1eb6060ca787921bec6b4ce35d0a995dfc5318a2fd41d4f5a0d871a552cc87",
+    "game_math/original_math.c": "bd6e1a081fe94849cd2f3b1acfd98550a111f071676d456c71eb56bca139d4fb",
+    "graphics/original_graphics.cpp": "3008b6c7c7e799a3091f9ac0181fe95d8a337fe937678d15efac3c4cda2c519e",
+    "hwdiag/source/diagnostic_gpu.c": "91965e55fefc52a89e833fd87015c2b8ef5f6290f7ce1d1200a79e04200b4053"
+  },
+  "packager_sha256": "25458b634d472e211527c6a7243f8dbcea15cbf013b5455068821368df72977d",
+  "result": "BUILD PASSED; runtime/hardware results require separate testing"
+}

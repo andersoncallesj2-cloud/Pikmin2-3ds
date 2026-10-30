@@ -1,0 +1,12 @@
+vshader.v.pica
+built ... pikmin2-iso-prototype.smdh
+vshader.shbin
+original_graphics.cpp
+original_section.cpp
+port_engine.cpp
+checked_gpu.c
+main.c
+original_math.c
+port_math.c
+linking pikmin2-iso-prototype.elf
+built ... pikmin2-iso-prototype.3dsx

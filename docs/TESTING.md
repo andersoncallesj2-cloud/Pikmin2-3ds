@@ -72,3 +72,34 @@ hardware observations; the timeout path has not been validated on a hung console
 Do not resume major engine integration until this exact diagnostic's triangle,
 checkerboard and spheres work stably on the user's New 3DS XL. Emulator rendering,
 API status, screenshots and successful compilation alone do not satisfy this gate.
+
+## ISO resource prototype
+
+This is a separate title, **Pikmin 2 ISO Prototype**, ID `000400000F2A7500`.
+Test HW01 first; stop if any known stage freezes the console.
+
+1. Build privately with [tools/build.py](BUILDING.md), or use the explicitly
+   synthetic `downloads/pikmin2-iso-fixture.cia` / `.3dsx` for a data-free smoke
+   test. The public build contains a colour pattern, not a Pikmin banner/model.
+2. Install the CIA through your existing homebrew installer, or copy the 3DSX to
+   `/3ds/pikmin2-iso-prototype/` and launch with Homebrew Launcher. RomFS is inside
+   each application; no external SD asset copy or DSP firmware is needed.
+3. On launch expect magenta top-screen clear colour, an advancing frame number
+   and a bottom-screen resource CRC. For the public synthetic build expect
+   `SYNTHETIC TEST FIXTURE`, raw banner SHA prefix
+   `b2e7835f8b5e3e587c56d7b6dad0b666` and CRC `8dad7166`.
+4. Press **A**. Expect a rectangular image above/behind the three spheres and
+   checkerboard. With a real supported ISO this must be that dump's banner;
+   compare the displayed raw SHA prefix with `build-report.json`. A clear screen
+   alone does not prove resource rendering. Default vertex count is 28,512.
+5. Hold **L/R** to orbit, **B** to reset. **X** changes the colour path (fixed
+   colour deliberately obscures image colours). **Y** changes depth. Restore
+   interleaved colour and depth ON to judge the image. **START** should exit.
+6. Report launch format, console model, whether frames advance, first failure,
+   resource CRC/hash, GPU/queue/vertex status and whether START exits. A photo of
+   both screens is useful. Do not publicly upload real game images or packages.
+
+The ISO prototype does not write a separate SD log; photograph the overlay and
+use HW01's log for lower-level failures. If exit fails or the heartbeat freezes,
+stop further stages. The same nonblocking path is reused, but recovery from a
+wedged hardware GPU remains unproven. The real-hardware issue is still open.

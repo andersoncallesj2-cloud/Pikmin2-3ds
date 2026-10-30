@@ -1,0 +1,25 @@
+BasicInfo:
+  Title: "P2ISO"
+  CompanyCode: "00"
+  ProductCode: "CTR-P-P2IS"
+  ContentType: Application
+  Logo: Homebrew
+TitleInfo:
+  UniqueId: 0xF2A75
+  Category: Application
+Option:
+  UseOnSD: true
+  EnableCompress: true
+  FreeProductCode: true
+  EnableCrypt: false
+SystemControlInfo:
+  SaveDataSize: 0KB
+  RemasterVersion: 0
+  StackSize: 0x40000
+AccessControlInfo:
+  FileSystemAccess:
+    - DirectSdmc
+    - DirectSdmcWrite
+
+RomFs:
+  RootPath: romfs

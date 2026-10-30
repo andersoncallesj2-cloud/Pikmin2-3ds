@@ -1,0 +1,14 @@
+{
+  "prototype": "ISO-derived opening.bnr resource probe",
+  "stages": {
+    "ISO Validation": {
+      "status": "FAIL",
+      "error": "Executable checksum mismatch: unsupported, modified or damaged disc; expected checksums were not changed"
+    }
+  },
+  "hardware": "UNVERIFIED: previous New 3DS rendering failure remains open",
+  "gameplay": "not implemented",
+  "work_dir": "/tmp/pikmin-production-reject-check",
+  "outputs": {},
+  "result": "FAILED; do not use partial output"
+}

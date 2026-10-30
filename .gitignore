@@ -9,6 +9,7 @@ private/
 local-game-data/
 extracted-assets/
 output/
+/build/
 __pycache__/
 # User-supplied character models and converted private test data.
 *.obj

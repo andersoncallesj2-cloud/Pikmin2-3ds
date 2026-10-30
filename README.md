@@ -1,6 +1,36 @@
-# Pikmin 2 native New 3DS port — hardware rendering investigation
+# Pikmin 2 native New 3DS port — prototype builder
 
 **The previous viewer fails to render on the user's New 3DS XL and may freeze. This is NOT fixed or hardware-verified yet.** Major engine integration is paused at the hardware gate. This project aims to run original Pikmin 2 engine/gameplay code, not recreate the game.
+
+## New: limited ISO-to-CIA resource prototype
+
+```sh
+python tools/build.py --iso "/path/to/Pikmin2.iso" --target cia
+```
+
+With an installed devkitPro SDK and `makerom`, this builds a native app that reads
+the disc's **actual `opening.bnr`**, converts its 96×32 RGB5A3 image, embeds it in
+RomFS and displays it beside the diagnostic spheres. It reuses the original
+Section lifecycle, camera math and debug graphics extracts. It is **not a game
+compiler, original model loader or playable Pikmin 2**.
+
+Initially the validator permits only GPVE01 disc 0/revision 0 with the known
+projectPiki executable checksum. **No real game dump has been tested here.**
+Two synthetic-fixture builds passed real ARM compilation/CIA packaging, and the
+installed CIA renders in Azahar. The production command rejects those fixtures;
+there is no checksum bypass. RVZ/CISO conversion remains unimplemented.
+
+**[Build tutorial and output locations](docs/BUILDING.md)** ·
+**[Runtime details](port3ds/iso_prototype/README.md)** ·
+**[Synthetic smoke-test CIA](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-iso-fixture.cia)** ·
+**[Synthetic smoke-test 3DSX](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-iso-fixture.3dsx)**
+
+The public smoke build contains a generated colour pattern, **no Nintendo asset**.
+It starts in clear-colour mode: press **A** to show the card/spheres, **L/R** to
+orbit and **START** to exit. A CIA built from a real ISO contains private game
+data and must stay out of public downloads and Git history. The old Windows EXE
+does not include this new Python pipeline; the native SDK tutorial requires no
+Docker. Hardware testing remains pending for every new target.
 
 ## Optional Olimar model test (HW02)
 
@@ -26,7 +56,7 @@ HW01 adds real API checks, measured queue-busy time, a nonblocking queue polling
 
 The final CIA installs and runs all six stages in Azahar; colour/depth switches and clean START exit work. Physical New 3DS testing is **pending**. The original viewer/source/binaries remain below as an unchanged baseline.
 
-[Port status](PORT_STATUS.md) · [Open Nectar/original-engine audit](docs/ENGINE_INTEGRATION.md) · [Build and private ISO/RVZ/CISO workflow plan](docs/BUILDING.md)
+[Port status](PORT_STATUS.md) · [Open Nectar/original-engine audit](docs/ENGINE_INTEGRATION.md) · [Build and private ISO/RVZ/CISO workflow](docs/BUILDING.md)
 
 ---
 

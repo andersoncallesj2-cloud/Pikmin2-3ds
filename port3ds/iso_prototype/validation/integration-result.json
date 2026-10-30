@@ -1,0 +1,12 @@
+{
+  "test_data": "synthetic only, not Nintendo assets",
+  "two_real_compilations": true,
+  "two_real_cia_packages": true,
+  "different_input_assets_change_outputs": true,
+  "real_pikmin_dump_tested": false,
+  "hardware_tested": false,
+  "runs": [
+    "/workspace/private-build-tests/iso-final/run-0/output/build-report.json",
+    "/workspace/private-build-tests/iso-final/run-1/output/build-report.json"
+  ]
+}
