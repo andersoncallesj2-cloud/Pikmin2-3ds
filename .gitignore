@@ -20,3 +20,4 @@ __pycache__/
 *.gltf
 *.dae
 private-models/
+*.p2m
