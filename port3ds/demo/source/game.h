@@ -9,8 +9,8 @@
 #define MAX_HAZARDS 7
 #define MAX_OBSTACLES 6
 typedef struct { float x,y,z; } V3;
-typedef enum { FOLLOW, AIR, IDLE, CARRY, ATTACK, LOST, HELD, UNUSED, SPROUT, SEED_AIR, ENTER_ONION, BURNING, DROWNING, DYING } PikiState;
-typedef struct { V3 pos,vel; float face,work_time; PikiState state; int item,target; float settle;unsigned kind,owner;bool rejoin,called; } Piki;
+typedef enum { FOLLOW, AIR, IDLE, CARRY, ATTACK, LOST, HELD, UNUSED, SPROUT, SEED_AIR, ENTER_ONION, BURNING, DROWNING, DYING, DISBANDING } PikiState;
+typedef struct { V3 pos,vel,disband_target; float face,work_time; PikiState state; int item,target; float settle;unsigned kind,owner;bool rejoin,called; } Piki;
 typedef struct {V3 pos,home;float face,health,max_health,cooldown;bool dead,delivered;unsigned state,kind,item;} Bulborb;
 typedef enum { ITEM_TREASURE,ITEM_CARCASS,ITEM_PELLET } ItemType;
 typedef struct {V3 pos;int weight,max_carriers;bool available,delivered;float lift,radius,height;ItemType type;unsigned model,color,destination,value,seeds,matching_seeds;} CarryItem;

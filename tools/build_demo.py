@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build D03 native gameplay demo from a validated personal Pikmin 2 ISO."""
+"""Build D04 native gameplay demo from a validated personal Pikmin 2 ISO."""
 import argparse
 from datetime import datetime, timezone
 import json
@@ -31,7 +31,7 @@ def parameter(data, key, duplicate_equal=False):
 
 
 def run(iso, work_dir=None, makerom=None, tour=False, bannertool=None):
-    if tour:raise ValueError('D03 is a manual hardware demo; automated tour is retired')
+    if tour:raise ValueError('D04 is a manual hardware demo; automated tour is retired')
     if work_dir is None:
         (ROOT/'build').mkdir(exist_ok=True)
         work = Path(tempfile.mkdtemp(prefix='demo-',dir=ROOT/'build'))
@@ -40,8 +40,8 @@ def run(iso, work_dir=None, makerom=None, tour=False, bannertool=None):
     (work/'.gitignore').write_text('*\n')
     if any(c.isspace() for c in str(work)): raise ValueError('Choose a build workspace without spaces')
     out=work/'output';out.mkdir()
-    report={'demo':'D03','built_at_utc':datetime.now(timezone.utc).isoformat(),
-            'hardware':'D03 awaiting user hardware test; no emulator run requested',
+    report={'demo':'D04','built_at_utc':datetime.now(timezone.utc).isoformat(),
+            'hardware':'D04 awaiting user hardware test; no emulator run requested',
             'models':{},'outputs':{},'auto_showcase':tour}
     try:
         paths=['user/Kando/piki/pikis.szs','user/Abe/piki/naviParms.txt',
@@ -68,14 +68,14 @@ def run(iso, work_dir=None, makerom=None, tour=False, bannertool=None):
             report['models'][output]={**info,'archive_path':path,'source_sha256':sha(archive[path]),'converted_sha256':sha(asset)}
         onion_archive=rarc(resources[paths[4]])
         onion=onion_archive['goal.bmd'];colors=brk_final_colors(onion_archive['kidou_red.brk'])
-        asset,info=convert(onion,material_colors=colors)
+        asset,info=convert(onion,material_colors=colors,bake_materials=True)
         (romfs/'onion.p2m').write_bytes(asset)
         report['models']['onion']={**info,'archive_path':paths[4]+'/goal.bmd','source_sha256':sha(onion),'converted_sha256':sha(asset)}
         report['onion_red_colour_keys']=colors
         for output,index,name,overrides in [('ship',5,'ufo.bmd',None),('treasure',6,'ahiru.bmd',None),
                                             ('bulborb',7,'enemy.bmd',{0:resources[paths[8]],1:resources[paths[9]]})]:
             data=rarc(resources[paths[index]])[name]
-            asset,info=convert(data,external_textures=overrides,skinned=output=='bulborb')
+            asset,info=convert(data,external_textures=overrides,skinned=output=='bulborb',bake_materials=output=='ship')
             (romfs/(output+'.p2m')).write_bytes(asset)
             report['models'][output]={**info,'archive_path':paths[index]+'/'+name,'source_sha256':sha(data),'converted_sha256':sha(asset)}
         hud_archive=rarc(resources[paths[10]])
@@ -150,12 +150,12 @@ def run(iso, work_dir=None, makerom=None, tour=False, bannertool=None):
         if elf[:6]!=b'\x7fELF\x01\x01' or struct.unpack_from('<H',elf,18)[0]!=40: raise ValueError('Expected ARM ELF')
         x3ds=(app/'pikmin2-demo.3dsx').read_bytes()
         if x3ds[:4]!=b'3DSX' or any((romfs/name).read_bytes() not in x3ds for name in ('red.p2m','onion.p2m')): raise ValueError('3DSX missing model')
-        shutil.copy2(app/'pikmin2-demo.3dsx',out/'Pikmin2-3DS-port-D03.3dsx')
+        shutil.copy2(app/'pikmin2-demo.3dsx',out/'Pikmin2-3DS-port-D04.3dsx')
         packager=shutil.which(makerom or 'makerom')
         if not packager: raise ValueError('makerom missing; pass --makerom')
-        command([str(Path(packager).resolve()),'-f','cia','-o',out/'Pikmin2-3DS-port-D03.cia','-rsf','demo.rsf','-target','t','-elf','pikmin2-demo.elf','-icon','pikmin2-demo.smdh','-banner','../assets/menu.bnr','-desc','app:4'],'package.log')
-        report['cia_checks']=verify_cia(out/'Pikmin2-3DS-port-D03.cia',(romfs/'red.p2m').read_bytes())
-        for file in romfs.iterdir():verify_cia(out/'Pikmin2-3DS-port-D03.cia',file.read_bytes())
+        command([str(Path(packager).resolve()),'-f','cia','-o',out/'Pikmin2-3DS-port-D04.cia','-rsf','demo.rsf','-target','t','-elf','pikmin2-demo.elf','-icon','pikmin2-demo.smdh','-banner','../assets/menu.bnr','-desc','app:4'],'package.log')
+        report['cia_checks']=verify_cia(out/'Pikmin2-3DS-port-D04.cia',(romfs/'red.p2m').read_bytes())
+        for file in romfs.iterdir():verify_cia(out/'Pikmin2-3DS-port-D04.cia',file.read_bytes())
         report['source_hashes']={str(f.relative_to(runtime)):sha(f.read_bytes()) for f in runtime.rglob('*') if f.is_file() and f.suffix in ('.c','.cpp','.h','.pica')}
         for f in out.iterdir():report['outputs'][f.name]={'sha256':sha(f.read_bytes()),'bytes':f.stat().st_size}
         report['result']='PASS: ARM compilation, real disc conversion, CIA/3DSX packaging'

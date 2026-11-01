@@ -200,6 +200,21 @@ static void follow_captain(Game *g,float dt){
     g->other_captain.x+=g->other_velocity.x*dt;g->other_captain.z+=g->other_velocity.z*dt;collide(g,&g->other_captain,8.5f);
     if(length(velocity[0],velocity[2])>1)g->other_face=roundAng(atan2f(velocity[0],velocity[2]));
 }
+/* Adapted from Navi::releasePikis: colour means, sqrt(N)*6.25 radii,
+ * four separation passes and clearance from both captains. Native walk FSM
+ * replaces ActFree/InteractKaisan; positions remain collision checked. */
+static void dismiss_colours(Game *g){
+    V3 centers[3]={{0}};unsigned counts[3]={0},rank[3]={0};float radius[3]={0};
+    for(int i=0;i<SQUAD;i++){Piki *p=&g->pikis[i];if(p->state==FOLLOW&&p->owner==g->active_captain){centers[p->kind].x+=p->pos.x;centers[p->kind].z+=p->pos.z;counts[p->kind]++;}}
+    for(unsigned c=0;c<3;c++)if(counts[c]){centers[c].x/=counts[c];centers[c].z/=counts[c];radius[c]=sqrtf(counts[c])*6.25f;}
+    for(unsigned pass=0;pass<4;pass++)for(unsigned c=0;c<3;c++)if(counts[c]){
+        V3 captains[]={g->captain,g->other_captain};
+        for(unsigned n=0;n<2;n++){float dx=centers[c].x-captains[n].x,dz=centers[c].z-captains[n].z,d=length(dx,dz),min=radius[c]+45;if(d<min){float a=g->face+c*2*PI/3;if(d<.01f){dx=sinf(a);dz=cosf(a);d=1;}centers[c].x+=dx/d*(min-d);centers[c].z+=dz/d*(min-d);}}
+        for(unsigned j=c+1;j<3;j++)if(counts[j]){float dx=centers[c].x-centers[j].x,dz=centers[c].z-centers[j].z,d=length(dx,dz),min=radius[c]+radius[j]+20;if(d<min){if(d<.01f){dx=1;dz=0;d=1;}float push=(min-d);centers[c].x+=dx/d*push;centers[c].z+=dz/d*push;centers[j].x-=dx/d*push;centers[j].z-=dz/d*push;}}
+    }
+    for(int i=0;i<SQUAD;i++){Piki *p=&g->pikis[i];if(p->state==FOLLOW&&p->owner==g->active_captain){unsigned n=rank[p->kind]++;float a=n*2.39996323f,r=6.25f*sqrtf(n);p->disband_target=(V3){centers[p->kind].x+r*sinf(a),0,centers[p->kind].z+r*cosf(a)};collide(g,&p->disband_target,4);p->state=DISBANDING;p->item=-1;p->work_time=0;}}
+    g->other_following=false;
+}
 void game_step(Game *g,Input in,float dt){
     if(in.reset){Parameters p=g->parms;game_init(g,p);return;}if(!(dt>0&&dt<=.05f))return;
     g->time+=dt;g->steps++;g->pluck_timer=fmaxf(0,g->pluck_timer-dt);g->action_timer=fmaxf(0,g->action_timer-dt);
@@ -226,7 +241,7 @@ void game_step(Game *g,Input in,float dt){
     float d=length(x,z);
     if(d>0){float sx=x/d*g->parms.cursor_speed,sz=z/d*g->parms.cursor_speed;V3 next={g->cursor_offset.x+sx*dt,0,g->cursor_offset.z+sz*dt};float r=length(next.x,next.z);if(r>=g->parms.cursor_radius){float nx=next.x/r,nz=next.z/r,dot=nx*sx+nz*sz;next=(V3){g->cursor_offset.x+(sx-nx*dot)*dt,0,g->cursor_offset.z+(sz-nz*dot)*dt};}g->cursor_offset=next;}
     g->cursor=(V3){g->captain.x+g->cursor_offset.x,0,g->captain.z+g->cursor_offset.z};g->aim_distance=length(g->cursor_offset.x,g->cursor_offset.z);
-    if(in.dismiss){for(int i=0;i<SQUAD;i++)if(g->pikis[i].state==FOLLOW&&g->pikis[i].owner==g->active_captain)g->pikis[i].state=IDLE;g->other_following=false;}
+    if(in.dismiss)dismiss_colours(g);
     if(!in.grab_held)g->plucking=false;
     if(g->plucking&&in.grab_held&&g->pluck_timer<=0)pluck(g);
     if(in.grab_pressed&&g->held_piki<0&&g->onion_menu<0){
@@ -283,7 +298,8 @@ void game_step(Game *g,Input in,float dt){
             float dist=distance(p->pos,target);if(dist<=7)p->settle=0;else if(dist<15)p->settle=fminf(6,p->settle+dt*30);else p->settle=0;
             if(dist<=7||(dist<=15&&p->settle<6))p->vel=(V3){0};else walk(g,p,target,dist<15?g->parms.walk:g->parms.run,dt);
             if(active&&g->swarm_strength>0&&distance(p->pos,target)<35)work(g,p);
-        }else if(p->state==IDLE){p->pos.y=0;work(g,p);}
+        }else if(p->state==DISBANDING){walk(g,p,p->disband_target,g->parms.run,dt);p->work_time+=dt;if(distance(p->pos,p->disband_target)<5||p->work_time>5){p->state=IDLE;p->vel=(V3){0};}}
+        else if(p->state==IDLE){p->pos.y=0;work(g,p);}
         else if(p->state==ENTER_ONION){V3 home=game_onion_position(p->kind);walk(g,p,home,g->parms.run,dt);if(distance(p->pos,home)<7){g->onion_stored[p->kind]++;p->state=UNUSED;}}
         else if(p->state==ATTACK){
             bool dead;V3 target;float radius,height;

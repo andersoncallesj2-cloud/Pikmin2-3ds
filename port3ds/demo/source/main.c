@@ -14,7 +14,7 @@
 typedef struct {float p[4],c[4],uv[4];} Vertex;
 typedef struct {Vertex *v;u32 count,mode;int texture;} Batch;
 typedef struct {unsigned state,frames,loop;C3D_FVec *matrices;} AnimClip;
-typedef struct {C3D_Tex tex[16];unsigned nt,nb;Batch batch[16];bool opaque,effect;unsigned nc,nm;AnimClip clips[12];void *animation;} Model;
+typedef struct {C3D_Tex tex[16];unsigned nt,nb;Batch batch[16];bool opaque,effect;float tilt;unsigned nc,nm;AnimClip clips[12];void *animation;} Model;
 typedef struct {unsigned state;float since;} ActorAnim;
 static ActorAnim piki_anim[SQUAD],captain_anim[2],enemy_anim[MAX_ENEMIES];
 static Model olimar,louie,pikmin[3],leaf,onion[3],ship,treasure[3],enemy_model[3],spot[3],seed[3],pellet[4][3],posy,fire,electric,water,terrain;
@@ -187,16 +187,17 @@ static bool initialize(void){
     C3D_AlphaTest(true,GPU_GREATER,16);C3D_AlphaBlend(GPU_BLEND_ADD,GPU_BLEND_ADD,GPU_SRC_ALPHA,GPU_ONE_MINUS_SRC_ALPHA,GPU_ONE,GPU_ONE_MINUS_SRC_ALPHA);
     return true;
 }
-static void matrix(V3 p,float angle,V3 scale){
-    C3D_Mtx model,mv,mvp;Mtx_Identity(&model);Mtx_Translate(&model,p.x,p.y,p.z,true);Mtx_RotateY(&model,angle,true);Mtx_Scale(&model,scale.x,scale.y,scale.z);
+static void matrix_tilt(V3 p,float angle,float tilt,V3 scale){
+    C3D_Mtx model,mv,mvp;Mtx_Identity(&model);Mtx_Translate(&model,p.x,p.y,p.z,true);Mtx_RotateY(&model,angle,true);Mtx_RotateX(&model,tilt,true);Mtx_Scale(&model,scale.x,scale.y,scale.z);
     Mtx_Multiply(&mv,&view,&model);Mtx_Multiply(&mvp,&projection,&mv);C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER,u_mvp,&mvp);
 }
+static void matrix(V3 p,float angle,V3 scale){matrix_tilt(p,angle,0,scale);}
 static void draw(Vertex *v,unsigned n,C3D_Tex *tex,float r,float g,float b,float a){
     C3D_FVUnifSet(GPU_VERTEX_SHADER,u_tint,r,g,b,a);C3D_TexBind(0,tex);
     C3D_BufInfo *buf=C3D_GetBufInfo();BufInfo_Init(buf);if(BufInfo_Add(buf,v,sizeof(Vertex),3,0x210)<0){error="VBO setup";return;}C3D_DrawArrays(GPU_TRIANGLES,0,n);
 }
 static void model(Model *m,V3 p,float angle,float scale){
-    matrix(p,angle,(V3){scale,scale,scale});
+    matrix_tilt(p,angle,m->tilt,(V3){scale,scale,scale});
     for(unsigned i=0;i<m->nb;i++){
         Batch *b=&m->batch[i];bool opaque=m->opaque||b->mode==1;
         C3D_TexEnv *e=C3D_GetTexEnv(0);
@@ -335,7 +336,7 @@ static void render(const Game *g){
         else model(&pellet[it->model][it->color],p,0,1);
     }
     for(unsigned i=0;i<g->enemy_count;i++){const Bulborb *e=&g->enemies[i];if(e->delivered)continue;V3 p=e->pos;p.y+=g->items[e->item].lift;animated(&enemy_model[e->kind],p,e->face,1,e->dead?10:e->cooldown>1?3:e->state?1:0,g->time,&enemy_anim[i]);}
-    for(unsigned i=0;i<g->posy_count;i++)if(g->posies[i].alive){const PelletPosy *p=&g->posies[i];model(&posy,p->pos,0,p->scale);V3 head=p->pos;head.y+=80*p->scale;const CarryItem *it=&g->items[p->item];model(&pellet[it->model][it->color],head,0,.6f);}
+    for(unsigned i=0;i<g->posy_count;i++)if(g->posies[i].alive){const PelletPosy *p=&g->posies[i];model(&posy,p->pos,0,p->scale);V3 head=p->pos;head.y+=80*p->scale;const CarryItem *it=&g->items[p->item];Model *flower_pellet=&pellet[it->model][it->color];flower_pellet->tilt=1.570796327f;model(flower_pellet,head,c->theta,.6f);flower_pellet->tilt=0;}
     for(unsigned i=0;i<MAX_HAZARDS;i++)model(g->hazards[i].kind?&electric:&fire,g->hazards[i].pos,0,1);
     animated(g->active_captain?&louie:&olimar,g->captain,g->face,1.2f,g->captain_health[g->active_captain]<=0?10:g->action_timer>0?g->captain_action:g->plucking?8:g->calling?7:g->held_piki>=0?6:g->velocity.x*g->velocity.x+g->velocity.z*g->velocity.z>25?2:0,g->time,&captain_anim[g->active_captain]);
     animated(g->active_captain?&olimar:&louie,g->other_captain,g->other_face,1.2f,g->other_velocity.x*g->other_velocity.x+g->other_velocity.z*g->other_velocity.z>25?2:0,g->time,&captain_anim[g->active_captain^1]);
@@ -358,6 +359,7 @@ int main(void){
     bool ready=initialize();Parameters p={0};FILE *f=fopen("romfs:/params.bin","rb");if(!f||!take(f,&p,sizeof(p))){ready=false;error="Parameters missing";}if(f)fclose(f);
     Game g={0};if(ready){game_init(&g,p);audio_init();}bool paused=false;u64 previous=osGetTime(),last_log=0;float accum=0;unsigned ticks=0;Input pending={0};
     while(aptMainLoop()){
+        u64 frame_start=svcGetSystemTick();
         hidScanInput();u32 down=hidKeysDown(),held=hidKeysHeld(),up=hidKeysUp();
         if(down&KEY_START)paused=!paused;
         if(paused&&(down&KEY_SELECT))break;
@@ -384,8 +386,10 @@ int main(void){
             in.grab_pressed=pending.grab_pressed;in.switch_pressed=pending.switch_pressed;
             in.center_pressed=pending.center_pressed;in.zoom_pressed=pending.zoom_pressed;in.angle_pressed=pending.angle_pressed;
             in.cycle_pressed=pending.cycle_pressed;in.menu_accept=pending.menu_accept;in.menu_cancel=pending.menu_cancel;in.menu_delta=pending.menu_delta;
-            unsigned delivered=g.delivered,sprouts=game_count(&g,SEED_AIR);float health=g.captain_health[g.active_captain];
+            unsigned delivered=g.delivered,sprouts=game_count(&g,SEED_AIR),throws_before=g.throws,captain_before=g.active_captain;float health=g.captain_health[g.active_captain];
             game_step(&g,in,1.f/60);
+            if(g.throws>throws_before)audio_effect(0);
+            if(g.active_captain!=captain_before)audio_effect(g.active_captain?2:1);
             if(g.delivered>delivered)audio_jingle(0);
             else if(health>0&&g.captain_health[g.active_captain]<=0)audio_jingle(1);
             else if(!sprouts&&game_count(&g,SEED_AIR)>0)audio_jingle(2);
@@ -395,14 +399,15 @@ int main(void){
             pending=(Input){0};accum-=1.f/60;
         }
         if(ready){audio_update(paused);render(&g);}
-        if(ticks++%15==0){consoleClear();printf("Pikmin 2 - 3DS port\nD03 %s GPU:%s %u frames\n",paused?"PAUSED":"PLAY",stalled?"TIMEOUT":"OK",frames);
+        if(ticks++%15==0){consoleClear();printf("Pikmin 2 - 3DS port\nD04 %s GPU:%s %u frames\n",paused?"PAUSED":"PLAY",stalled?"TIMEOUT":"OK",frames);
             printf("Squad:%u Field:%u/100 Day:%u\n",game_squad_count(&g,3),game_field_count(&g),game_day_number(&g));
             printf("Stored B:%u R:%u Y:%u\nPokos:%u Lost:%u Position:%d,%d\n",g.onion_stored[0],g.onion_stored[1],g.onion_stored[2],g.pokos,g.deaths,(int)g.captain.x,(int)g.captain.z);
             if(g.onion_menu>=0)printf("\n%s ONION\nD-pad UP: take out DOWN: put in\nChange:%+d (A confirm B cancel)\n",g.onion_menu==0?"BLUE":g.onion_menu==1?"RED":"YELLOW",g.onion_adjust);
             else printf("\nCircle: gentle aim / full move\nHold A + B: change Pikmin type\nHold A, release: throw\nA near sprout: pluck (hold for more)\nA near Onion: open Onion menu\nB: whistle  X: dismiss  Y: captain\nL: centre; hold L + Circle: orbit\nR: zoom; hold R: close view\nZL: angle  C-stick / D-pad: swarm\nSTART pause; paused SELECT exit\nPaused Y: reset test map\n\nTreasure -> ship; food -> Onion\nRed: fire Yellow: electric Blue: water\n");
             printf("Audio:%.32s\nError:%.32s\n",audio_status(),error);gfxFlushBuffers();}
-        if(log_file&&now-last_log>2000){fprintf(log_file,"D03 t=%.2f frames=%u busy=%u stalled=%d throws=%u land=%u recall=%u carry=%u delivered=%u error=%s\n",g.time,frames,busy_ms,stalled,g.throws,g.landings,g.recalls,game_count(&g,CARRY),g.delivered,error);fflush(log_file);last_log=now;}
-        svcSleepThread(1000000);
+        if(log_file&&now-last_log>2000){fprintf(log_file,"D04 t=%.2f frames=%u busy=%u stalled=%d throws=%u land=%u recall=%u carry=%u delivered=%u error=%s\n",g.time,frames,busy_ms,stalled,g.throws,g.landings,g.recalls,game_count(&g,CARRY),g.delivered,error);fflush(log_file);last_log=now;}
+        s64 frame_remaining=33333334LL-(svcGetSystemTick()-frame_start)*1000000000ULL/SYSCLOCK_ARM11;
+        if(frame_remaining>0)svcSleepThread(frame_remaining);
     }
     audio_exit();
     if(c3d){u64 start=osGetTime();while(!stalled){if(C3D_FrameBegin(C3D_FRAME_NONBLOCK)){C3D_FrameEnd(0);break;}if(osGetTime()-start>250){stalled=true;break;}svcSleepThread(1000000);}

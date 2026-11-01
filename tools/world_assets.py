@@ -31,13 +31,13 @@ def build(resources,pikis,romfs,source,report,parameter):
         if label!='red':save(label,pikis['piki_model/piki_p2_'+label+'.bmd'],tint=colors[color],tint_materials=(0,),skinned=True)
         seed=rarc(resources[PATHS[4]])['pikihead.bmd'];save('seed_'+label,seed,tint=colors[color],tint_materials=(0,))
         onion=rarc(resources['user/Kando/onyon/arc.szs'])
-        if label!='red':save('onion_'+label,onion['goal.bmd'],material_colors=brk_final_colors(onion['kidou_'+label+'.brk']))
+        if label!='red':save('onion_'+label,onion['goal.bmd'],material_colors=brk_final_colors(onion['kidou_'+label+'.brk']),bake_materials=True)
         effect=rarc(resources['user/Kando/effect/modeleffect.szs'])
         if label!='red':save('spot_'+label,effect['onyonspot.bmd'],material_colors=brk_final_colors(effect['onyonspot_'+label+'.brk']),unlit=True)
     for label,path in [('dwarf',PATHS[0]),('posy',PATHS[1]),('fire',PATHS[2]),('electric',PATHS[3]),('water',PATHS[5])]:
         arc=rarc(resources[path]);entries=[v for k,v in arc.items() if k.endswith('.bmd')]
         if len(entries)!=1:raise ValueError('Ambiguous original model: '+path)
-        save(label,entries[0],unlit=label=='water',skinned=label=='dwarf')
+        save(label,entries[0],unlit=label in ('water','posy'),skinned=label=='dwarf',bake_materials=label=='posy')
     red=rarc(resources['enemy/data/Chappy/model.szs'])['enemy.bmd']
     save('orange',red,external_textures={0:resources[PATHS[9]],1:resources[PATHS[10]]},skinned=True)
     report['animations']={}
@@ -61,7 +61,7 @@ def build(resources,pikis,romfs,source,report,parameter):
     # Original PelletNumber::Object::changeMaterial, register bpel1.
     pellet_colors=[(0,51,255,255),(251,17,0,255),(255,220,52,255)]
     for value in range(4):
-        for color in range(3):save(f'pellet_{value}_{color}',pellet[f'white{value+1}.bmd'],material_colors={'bpel1':pellet_colors[color]})
+        for color in range(3):save(f'pellet_{value}_{color}',pellet[f'white{value+1}.bmd'],material_colors={'bpel1':pellet_colors[color]},bake_materials=True,unlit=True)
     treasure_configs=resources['user/Abe/Pellet/pal/otakara_config.txt'];treasures=[]
     for label,path in [('bolt',PATHS[11]),('apple_blue',PATHS[12])]:
         entry=config(treasure_configs,label);arc=rarc(resources[path]);entries=[v for k,v in arc.items() if k.endswith('.bmd')]
@@ -100,9 +100,16 @@ def build(resources,pikis,romfs,source,report,parameter):
         offset+=size
     if tex is None:raise ValueError('Original ground texture missing')
     label='tsuchi_floor_256x256_s3tc';idx=names(tex,tex.u32(16)).index(label);h=tex.u32(12)+idx*32
-    w,he,pixels=bti(tex.data[h:]);native=tiled_rgba(pixels,w,he)
+    w,he,pixels=bti(tex.data[h:])
+    # The original atlas's lower half is dirt; its upper half is a wall.
+    # Box prefilter the floor region to avoid severe minification shimmer.
+    crop=bytearray()
+    for y in range(32):
+        for x in range(64):
+            for c in range(4):crop.append(sum(pixels[((he//2+y*4+dy)*w+x*4+dx)*4+c] for dy in range(4) for dx in range(4))//16)
+    w,he,pixels=64,32,crop;native=tiled_rgba(pixels,w,he)
     payload=bytearray(struct.pack('<4I',w,he,1,1)+native+struct.pack('<iII',0,6,1))
-    for x,z,u,v in [(-1,-1,0,0),(1,-1,40,0),(1,1,40,40),(-1,-1,0,0),(1,1,40,40),(-1,1,0,40)]:
+    for x,z,u,v in [(-1,-1,0,0),(1,-1,8,0),(1,1,8,8),(-1,-1,0,0),(1,1,8,8),(-1,1,0,8)]:
         payload.extend(struct.pack('<12f',x,0,z,1,1,1,1,1,u,1-v,0,0))
     (romfs/'terrain.p2m').write_bytes(struct.pack('<4s5I',b'P2M2',len(payload),zlib.crc32(payload),1,1,6)+payload)
     report['ground_texture']={'source':PATHS[13]+'/view.bmd','texture':label}

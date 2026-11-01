@@ -5,7 +5,7 @@
 #include <string.h>
 #define FRAMES 2048
 typedef struct {FILE *file;u32 rate,frames,start,end,position;unsigned channel;bool loop;ndspWaveBuf wave[3];s16 *buffers[3];} Stream;
-static Stream streams[2];static bool ready;static const char *status="not initialized";
+static Stream streams[3];static bool ready;static const char *status="not initialized";
 static void close_stream(Stream *s){
     ndspChnWaveBufClear(s->channel);
     if(s->file){fclose(s->file);s->file=NULL;}
@@ -33,18 +33,19 @@ static void fill(Stream *s){
 }
 bool audio_init(void){
     Result rc=ndspInit();if(R_FAILED(rc)){status="DSP unavailable (dspfirm.cdc)";return false;}ready=true;
-    for(unsigned c=0;c<2;c++){Stream *s=&streams[c];s->channel=c;for(unsigned i=0;i<3;i++){s->buffers[i]=linearAlloc(FRAMES*4);if(!s->buffers[i]){status="audio allocation failed";audio_exit();return false;}}}
+    for(unsigned c=0;c<3;c++){Stream *s=&streams[c];s->channel=c;for(unsigned i=0;i<3;i++){s->buffers[i]=linearAlloc(FRAMES*4);if(!s->buffers[i]){status="audio allocation failed";audio_exit();return false;}}}
     if(!open_stream(&streams[0],"music",true)){status="music asset unavailable";return false;}
     status="NDSP / original title music";audio_update(false);return true;
 }
 void audio_update(bool paused){
     if(!ready)return;
-    for(unsigned c=0;c<2;c++){ndspChnSetPaused(c,paused);if(!paused)fill(&streams[c]);}
-    bool jingle=ndspChnIsPlaying(1);float mix[12]={0};mix[0]=mix[1]=jingle?.15f:.45f;ndspChnSetMix(0,mix);mix[0]=mix[1]=.8f;ndspChnSetMix(1,mix);
+    for(unsigned c=0;c<3;c++){ndspChnSetPaused(c,paused);if(!paused)fill(&streams[c]);}
+    bool jingle=ndspChnIsPlaying(1);float mix[12]={0};mix[0]=mix[1]=jingle?.15f:.45f;ndspChnSetMix(0,mix);mix[0]=mix[1]=.8f;ndspChnSetMix(1,mix);ndspChnSetMix(2,mix);
 }
 void audio_jingle(unsigned kind){
     if(!ready||kind>2)return;
     const char *names[]={"treasure-jingle","captain-down","pikmin-greeting"};open_stream(&streams[1],names[kind],false);fill(&streams[1]);
 }
-void audio_exit(void){if(!ready)return;for(unsigned c=0;c<2;c++)close_stream(&streams[c]);ndspExit();for(unsigned c=0;c<2;c++)for(unsigned i=0;i<3;i++)if(streams[c].buffers[i]){linearFree(streams[c].buffers[i]);streams[c].buffers[i]=NULL;}ready=false;}
+void audio_effect(unsigned kind){if(!ready||kind>2)return;const char *names[]={"throw","switch-olimar","switch-louie"};open_stream(&streams[2],names[kind],false);fill(&streams[2]);}
+void audio_exit(void){if(!ready)return;for(unsigned c=0;c<3;c++)close_stream(&streams[c]);ndspExit();for(unsigned c=0;c<3;c++)for(unsigned i=0;i<3;i++)if(streams[c].buffers[i]){linearFree(streams[c].buffers[i]);streams[c].buffers[i]=NULL;}ready=false;}
 const char *audio_status(void){return status;}

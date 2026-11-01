@@ -1,5 +1,7 @@
 # Pikmin 2 native New 3DS port â€” prototype builder
 
+**D04 hardware update:** [changes and limitations](docs/DEMO_D04.md). Adds material-layer fixes, upright Posy pellets, colour-group dismissal, original throw/switch samples and a 30 FPS cap. Compiled only; hardware check pending.
+
 **D03 hardware handoff:** [features, controls, build instructions and remaining work](docs/DEMO_D03.md).
 The expanded demo adds three Onions, a 100-Pikmin field limit, storage and
 sprouting, three starting colours, a pond and hazards, five enemies, sixteen

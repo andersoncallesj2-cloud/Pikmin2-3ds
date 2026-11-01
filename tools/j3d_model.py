@@ -150,7 +150,7 @@ def brk_final_colors(data):
     return result
 
 
-def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=None, material_colors=None, unlit=False, skinned=False):
+def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=None, material_colors=None, unlit=False, skinned=False, bake_materials=False):
     if len(data) > 8*1024*1024 or data[:8] != b'J3D2bmd3':
         raise ValueError('Expected bounded J3D2bmd3')
     source = Block(data)
@@ -283,6 +283,10 @@ def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=Non
         ti = mat.u16(r+132)
         texture_id = mat.u16(mat.u32(72)+ti*2) if ti != 65535 else -1
         if texture_id >= len(textures): raise ValueError('Material texture index out of bounds')
+        if bake_materials:
+            from material_bake import bake
+            w,h,pixels=bake(mat,r,tex,(material_colors or {}).get(material_names[material]))
+            texture_id=len(textures);textures.append((w,h,bytes((0,0)),tiled_rgba(pixels,w,h),1,1));color=(1,1,1,1)
         r = shp.u32(12)+shp.u16(shp.u32(16)+2*shape)*40
         matrix_type, groups, desc, mtx_init, draw_init = shp.read('Bx4H',r)
         if matrix_type not in (0,3) or groups > 4096: raise ValueError('Unsupported shape matrix type/count')
