@@ -86,26 +86,30 @@ bool port_gfx_init(void)
 void port_gfx_shutdown(void)
 {
     if (!active) return;
-    /* Do not enter Citro3D's unbounded queue wait on an observed busy GPU.
-     * Keep in-flight memory intact; process teardown owns its final cleanup.
-     * A stuck GPU/driver can still require OS recovery; this is not guaranteed. */
-    if (busy_since) svcExitProcess();
-    C3D_FrameSync();
+    /* Drain before freeing GPU-visible resources. Never bypass the CIA's APT
+     * close sequence with svcExitProcess. A wedged GPU still may not recover. */
+    u64 start=osGetTime();
+    while(!status.stalled) {
+        if(C3D_FrameBegin(C3D_FRAME_NONBLOCK)) { C3D_FrameEnd(0); break; }
+        if(osGetTime()-start>=250) { status.stalled=true; fail("exit queue drain timed out"); break; }
+        svcSleepThread(1000000);
+    }
+    if(status.stalled)return; /* Keep in-flight allocations until process exit. */
+    C3D_Fini(); target=NULL; active=false;
     if(vertices)linearFree(vertices);
     if(status.program==CHECK_PASS)shaderProgramFree(&program);
     if(shader)DVLB_Free(shader);
-    if(target)C3D_RenderTargetDelete(target);
-    C3D_Fini(); active=false;
 }
 void port_gfx_begin(const PortMtx34 view)
 {
+    if(status.stalled) { in_frame=false; status.frame=NOT_RUN; return; }
     in_frame=active && target && C3D_FrameBegin(C3D_FRAME_NONBLOCK);
     status.frame=in_frame?CHECK_PASS:NOT_RUN;
     if(!in_frame) {
         if (!busy_since)busy_since=osGetTime();
         status.busy_ms=(unsigned)(osGetTime()-busy_since);
         if(status.busy_ms>=2000 && !busy_reported) {
-            fail("GPU queue busy >2s (no completion)"); busy_reported=true;
+            fail("GPU queue busy >2s (no completion)"); busy_reported=true; status.stalled=true;
         }
         return;
     }
@@ -153,6 +157,7 @@ void port_gfx_end(void)
         else { C3D_DrawArrays(GPU_TRIANGLES,0,used); ++status.submitted; }
     }
     status.command_usage=C3D_GetCmdBufUsage();
+    status.last_test=test_number;
     C3D_FrameEnd(0); in_frame=false;
     status.cpu_ms=C3D_GetProcessingTime(); status.gpu_ms=C3D_GetDrawingTime();
 }

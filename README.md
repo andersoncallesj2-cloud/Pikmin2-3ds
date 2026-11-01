@@ -1,5 +1,12 @@
 # Pikmin 2 native New 3DS port — prototype builder
 
+**New physical result:** the ISO-PAL01 CIA shows clear colour on New 3DS XL, then
+distorted geometry/GPU queue timeout and a START-exit hang. The hardware gate
+failed. Use the new [HW03 control test](port3ds/hwprobe/README.md) to isolate the
+static clip-space and projection paths. PAL02 improves timeout/exit handling;
+it does not claim the rendering bug is fixed. Build HW03 without an ISO using
+`python tools/build_hwprobe.py --makerom /path/to/makerom`.
+
 **The previous viewer fails to render on the user's New 3DS XL and may freeze. This is NOT fixed or hardware-verified yet.** Major engine integration is paused at the hardware gate. This project aims to run original Pikmin 2 engine/gameplay code, not recreate the game.
 
 ## New: limited ISO-to-CIA resource prototype

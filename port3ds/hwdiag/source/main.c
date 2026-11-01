@@ -99,5 +99,5 @@ int main(void)
     }
     record(test,interleaved,depth);
     if(log_file)fclose(log_file);
-    port_gfx_shutdown(); gfxExit(); return 0;
+    port_gfx_shutdown(); if(!diag_status()->stalled)gfxExit(); return 0;
 }

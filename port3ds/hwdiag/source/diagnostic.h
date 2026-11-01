@@ -7,6 +7,8 @@ typedef struct {
     uintptr_t physical;
     size_t stride, bytes;
     unsigned vertices, submitted, failures, busy_ms;
+    unsigned last_test;
+    bool stalled;
     Result last_result;
     const char *last_error;
     int buffer_id;

@@ -25,15 +25,17 @@ static float fps;
 static const char *names[]={"","CLEAR COLOUR","TRIANGLE","CUBE","CHECKERBOARD","THREE SPHERES","FULL DEBUG SCENE","ISO BANNER"};
 static const char *check(Check c) { return c==CHECK_PASS?"PASS":c==CHECK_FAIL?"FAIL":"not run"; }
 static void select_test(unsigned next)
-{ test=next; colors=test>=4; depth=test>=3; changed=true; }
+{ if(diag_status()->stalled)return; test=next; colors=test>=4; depth=test>=3; changed=true; }
 static void record(void)
 {
     if(!log_file)return;
     const DiagnosticStatus *s=diag_status();
-    fprintf(log_file,"[ISO-PAL01] time=%llu test=%u %s asset=%s crc=%08lx GPU=%s RT=%s shader=%s program=%s uniform=%s VBO=%s attr=%s buffer=%s flush=%s frame=%s draw=%s verts=%u submitted=%u busy_ms=%u errors=%u last=%s\n",
+    fprintf(log_file,"[ISO-PAL02] time=%llu test=%u %s asset=%s crc=%08lx GPU=%s RT=%s shader=%s program=%s uniform=%s VBO=%s attr=%s buffer=%s flush=%s frame=%s draw=%s verts=%u submitted=%u busy_ms=%u errors=%u last=%s\n",
         (unsigned long long)osGetTime(),test,names[test],loaded?"loaded":"FAILED",(unsigned long)expected_crc,
         check(s->gpu),check(s->target),check(s->shader),check(s->program),check(s->uniform),check(s->vbo),check(s->attributes),
         check(s->buffer),check(s->flush),check(s->frame),check(s->draw_on),s->vertices,s->submitted,s->busy_ms,s->failures,s->last_error);
+    fflush(log_file);
+    fprintf(log_file,"[ISO-PAL02] last_submitted_test=%u stalled=%u physical=%08lx\n",s->last_test,s->stalled,(unsigned long)s->physical);
     fflush(log_file);
 }
 
@@ -139,7 +141,7 @@ static void end_frame(void *unused)
     if(!changed && frames%15)return;
     changed=false;
     const DiagnosticStatus *s=diag_status(); consoleClear();
-    printf("PIKMIN 2 ISO-PAL01 DIAGNOSTICS\n");
+    printf("PIKMIN 2 ISO-PAL02 DIAGNOSTICS\n");
     printf("%-39.39s\n%-39.39s\n",identity[0],identity[1]);
     printf("Asset: opening.bnr (96 x 32)\n");
     printf("%-39.39s\n",asset_error);
@@ -150,6 +152,7 @@ static void end_frame(void *unused)
     printf("Attrib:%s Buffer:%s Flush:%s\n",check(s->attributes),check(s->buffer),check(s->flush));
     printf("Frame:%s DrawOn:%s busy:%ums\n",check(s->frame),check(s->draw_on),s->busy_ms);
     printf("Test %u/7: %s (%u verts)\n",test,names[test],s->vertices);
+    printf("Last submit:%u Stalled:%s\n",s->last_test,s->stalled?"YES - tests locked":"no");
     printf("Heartbeat %u GX errors:%u\n",frames,port_gfx_errors());
     printf("Loop FPS:%.1f CPU:%.1f GPU:%.1fms\n",fps,s->cpu_ms,s->gpu_ms);
     printf("D-pad Left/Right: previous/next test\nA: banner/clear L/R: orbit B: reset\nX: color Y: depth START: exit\n");
@@ -158,7 +161,7 @@ static void end_frame(void *unused)
     printf("Last: %.38s\n",s->last_error);
     printf("SD hardware.log: %s\n",log_file?"OPEN":"unavailable");
     printf("PASS = API check, not visible proof.\n");
-    printf("No models or gameplay. Hardware untested.\n");
+    printf("PAL01 failed on hardware; PAL02 untested.\n");
     gfxFlushBuffers();
 }
 int main(void)
@@ -168,7 +171,7 @@ int main(void)
     log_file=fopen("sdmc:/3ds/pikmin2-iso-prototype/hardware.log","a");
     fps_start=osGetTime();
     load_asset();
-    if(log_file) { fprintf(log_file,"[ISO-PAL01] source=%s %s raw_sha256=%s asset=%s\n",identity[0],identity[1],identity[2],asset_error); fflush(log_file); }
+    if(log_file) { fprintf(log_file,"[ISO-PAL02] source=%s %s raw_sha256=%s asset=%s\n",identity[0],identity[1],identity[2],asset_error); fflush(log_file); }
     bool gpu=port_gfx_init();
     if(!gpu) {
         printf("GPU initialization failed.\nAsset: %s\nSTART to exit.\n",asset_error); gfxFlushBuffers();
@@ -179,6 +182,11 @@ int main(void)
         callbacks.update=update; callbacks.end_render=end_render; callbacks.end_frame=end_frame;
         port_engine_run(&callbacks,0,0,&stats);
     }
-    record(); if(log_file)fclose(log_file);
-    port_gfx_shutdown(); if(romfs_ready)romfsExit(); gfxExit(); return gpu && loaded?0:1;
+    printf("\nExit requested; draining GPU...\n"); gfxFlushBuffers();
+    record();
+    port_gfx_shutdown();
+    record(); if(log_file) { fprintf(log_file,"[ISO-PAL02] returning via normal libctru/APT exit\n"); fclose(log_file); }
+    if(romfs_ready)romfsExit();
+    if(!diag_status()->stalled)gfxExit();
+    return gpu && loaded?0:1;
 }

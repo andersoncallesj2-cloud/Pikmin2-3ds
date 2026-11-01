@@ -17,11 +17,34 @@ import disc_image
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def sdk_environment(work):
+    env = os.environ.copy()
+    sdk = env.get('DEVKITARM')
+    if os.name == 'nt' and sdk and not (Path(sdk) / '3ds_rules').is_file():
+        make = shutil.which('make')
+        if make:
+            candidate = Path(make).resolve().parents[3] / 'devkitARM'
+            if (candidate / '3ds_rules').is_file():
+                sdk = str(candidate)
+    if not sdk or not (Path(sdk) / '3ds_rules').is_file():
+        raise ValueError('Activate installed devkitPro devkitARM/libctru/Citro3D first (DEVKITARM/3ds_rules missing)')
+    sdk = Path(sdk).resolve()
+    env['DEVKITARM'] = sdk.as_posix()
+    env['DEVKITPRO'] = sdk.parent.as_posix()
+    env['PATH'] = os.pathsep.join([str(sdk / 'bin'), str(sdk.parent / 'tools/bin'), env.get('PATH', '')])
+    if os.name == 'nt':
+        temp = Path(work) / 'tmp'
+        temp.mkdir()
+        env['TMPDIR'] = temp.as_posix()
+    compiler = sdk / 'bin' / ('arm-none-eabi-gcc.exe' if os.name == 'nt' else 'arm-none-eabi-gcc')
+    return env, compiler
+
+
 def sha(data):
     return hashlib.sha256(data).hexdigest()
 
 
-def verify_cia(path, asset):
+def verify_cia(path, asset=None):
     data = path.read_bytes()
     if len(data) < 32:
         raise ValueError('Packager produced a truncated CIA')
@@ -35,15 +58,19 @@ def verify_cia(path, asset):
         raise ValueError('Expected unencrypted homebrew NCCH')
     for offset, digest_offset in ((0x1a0, 0x1c0), (0x1b0, 0x1e0)):
         section, section_size, hash_size = struct.unpack_from('<III', ncch, offset)
+        if offset == 0x1b0 and asset is None and (section, section_size, hash_size) == (0, 0, 0):
+            if any(ncch[digest_offset:digest_offset+32]):
+                raise ValueError('Absent RomFS has a nonzero digest')
+            continue
         a, length = section*512, hash_size*512
         if not section or not 0 < hash_size <= section_size or a + section_size*512 > len(ncch):
             raise ValueError('NCCH section bounds invalid')
         if hashlib.sha256(ncch[a:a+length]).digest() != ncch[digest_offset:digest_offset+32]:
             raise ValueError('NCCH section header hash mismatch')
-    if asset not in ncch:
+    if asset is not None and asset not in ncch:
         raise ValueError('CIA does not contain the converted ISO asset')
     return {'sha256': sha(data), 'bytes': len(data), 'ncch_sha256': sha(ncch),
-            'asset_embedded': True, 'section_header_hashes': 'match',
+            'asset_embedded': asset is not None, 'section_header_hashes': 'match',
             'signature_scope': 'homebrew; not Nintendo-signed'}
 
 
@@ -69,7 +96,7 @@ def run(iso, target='cia', work_dir=None, makerom=None, revisions=None, dolphin_
     (work / '.gitignore').write_text('*\n')
     output = work / 'output'
     output.mkdir()
-    report = {'prototype': 'ISO-derived opening.bnr resource probe / ISO-PAL01 diagnostics', 'stages': {},
+    report = {'prototype': 'ISO-derived opening.bnr resource probe / ISO-PAL02 diagnostics', 'stages': {},
               'built_at_utc': datetime.now(timezone.utc).isoformat(),
               'diagnostic_start_test': start_test,
               'hardware': 'UNVERIFIED: previous New 3DS rendering failure remains open',
@@ -138,28 +165,7 @@ def run(iso, target='cia', work_dir=None, makerom=None, revisions=None, dolphin_
         stage = 'Runtime Compilation'
         if any(c.isspace() for c in str(work)):
             raise ValueError('The devkitPro make template needs a workspace path without whitespace; select --work-dir accordingly (ISO paths may contain spaces)')
-        sdk = os.environ.get('DEVKITARM')
-        # devkitPro's Windows shell exports /opt/devkitpro, which native
-        # Python cannot resolve. Infer its real SDK root from the MSYS make
-        # executable, without changing the user's global SDK configuration.
-        if os.name == 'nt' and sdk and not (Path(sdk) / '3ds_rules').is_file():
-            make = shutil.which('make')
-            if make:
-                candidate = Path(make).resolve().parents[3] / 'devkitARM'
-                if (candidate / '3ds_rules').is_file():
-                    sdk = str(candidate)
-        if not sdk or not (Path(sdk) / '3ds_rules').is_file():
-            raise ValueError('Activate installed devkitPro devkitARM/libctru/Citro3D first (DEVKITARM/3ds_rules missing)')
-        sdk = Path(sdk).resolve()
-        build_env['DEVKITARM'] = sdk.as_posix()
-        build_env['DEVKITPRO'] = sdk.parent.as_posix()
-        build_env['PATH'] = os.pathsep.join([str(sdk / 'bin'), str(sdk.parent / 'tools/bin'), build_env.get('PATH', '')])
-        if os.name == 'nt':
-            # MSYS mktemp otherwise targets its installation's unwritable /tmp.
-            temp = work / 'tmp'
-            temp.mkdir()
-            build_env['TMPDIR'] = temp.as_posix()
-        compiler = Path(sdk) / 'bin' / ('arm-none-eabi-gcc.exe' if os.name == 'nt' else 'arm-none-eabi-gcc')
+        build_env, compiler = sdk_environment(work)
         report['compiler_version'] = subprocess.check_output([str(compiler), '--version'], text=True).splitlines()[0]
         runtime = work / 'runtime'
         # Copy only source/shared runtime data, never previous generated assets,

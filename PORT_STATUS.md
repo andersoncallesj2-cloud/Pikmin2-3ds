@@ -3,6 +3,22 @@
 Target: genuine original-engine native New Nintendo 3DS port. No remake or
 emulation path. Current priority: **Phase 0, real-hardware renderer diagnosis**.
 
+## Physical CIA failure reproduced by user; HW03 control prepared
+
+The user's New 3DS XL CIA test of ISO-PAL01 passed magenta clear colour but
+geometry distorted into a corner wedge. The CPU heartbeat continued while the
+overlay reported a GPU queue timeout. START stopped the heartbeat and hung.
+The physical rendering gate therefore **failed**. Successful banner loading and
+emulator rendering do not change that result.
+
+Added [HW03 static GPU control](port3ds/hwprobe/README.md) and builder
+`tools/build_hwprobe.py`: clear, uniform-free fixed-colour clip triangle,
+interleaved clip triangle, orthographic triangle and perspective triangle.
+New PAL02 logging latches the failing submission rather than allowing later test
+selections to obscure it. Both use a bounded queue drain before resource freeing
+and normal libctru/APT exit instead of direct `svcExitProcess`. Recovery from a
+wedged GPU remains unverified. Neither target is a proven hardware rendering fix.
+
 ## 2026-11-01 actual European ISO update
 
 GPVP01 disc 0/revision 0 now passes real-disc validation, BNR2 extraction,

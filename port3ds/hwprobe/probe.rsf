@@ -1,0 +1,22 @@
+BasicInfo:
+  Title: "P2HW03"
+  CompanyCode: "00"
+  ProductCode: "CTR-P-P2H3"
+  ContentType: Application
+  Logo: Homebrew
+TitleInfo:
+  UniqueId: 0xF2A76
+  Category: Application
+Option:
+  UseOnSD: true
+  EnableCompress: true
+  FreeProductCode: true
+  EnableCrypt: false
+SystemControlInfo:
+  SaveDataSize: 0KB
+  RemasterVersion: 0
+  StackSize: 0x40000
+AccessControlInfo:
+  FileSystemAccess:
+    - DirectSdmc
+    - DirectSdmcWrite

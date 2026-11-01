@@ -62,8 +62,9 @@ polls. After two seconds it reports missing completion. It does not overwrite
 an in-flight vertex buffer, and the CPU console is flushed independently of
 GPU progress. Heartbeat/loop FPS are CPU-loop measurements, not game performance.
 
-START avoids Citro3D's blocking cleanup if the queue is observed busy and uses
-process exit with in-flight allocations left intact. This does not guarantee
+PAL02/HW03 START uses a bounded queue drain and normal libctru/APT return, leaving
+in-flight allocations intact if the queue does not drain. Earlier direct process
+exit skipped the CIA's APT close handshake and was removed. This does not guarantee
 recovery from a genuinely wedged GPU/driver or kernel. Such a fault still requires
 hardware observations; the timeout path has not been validated on a hung console.
 
@@ -110,3 +111,11 @@ ISO-PAL01 appends an SD log to
 Send that log and a photograph of the overlay. If exit fails or the heartbeat freezes,
 stop further stages. The same nonblocking path is reused, but recovery from a
 wedged hardware GPU remains unproven. The real-hardware issue is still open.
+
+## New physical failure and HW03 control
+
+The user's PAL01 CIA on New 3DS XL showed distorted geometry and a queue timeout;
+START hung despite a live CPU heartbeat before exit. Do not repeat that build's
+later stages after the first fault. The next test is the independent
+[HW03 static control](../port3ds/hwprobe/README.md), which locks after a timeout
+and records the last submitted stage. Its physical results remain pending.

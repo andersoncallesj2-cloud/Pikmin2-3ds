@@ -7,10 +7,32 @@ import tempfile
 import unittest
 from unittest.mock import patch
 from iso_fixture import image
-from build import run
+from build import run, verify_cia
+import hashlib
+import struct
 
 
 class BuilderFailureTests(unittest.TestCase):
+    def test_asset_free_control_cia_still_checks_exefs_and_required_romfs(self):
+        # Generated container only; not a game asset or Nintendo signature.
+        ncch = bytearray(1024)
+        ncch[0x100:0x104] = b'NCCH'
+        ncch[0x18f] = 4
+        struct.pack_into('<III', ncch, 0x1a0, 1, 1, 1)
+        ncch[0x1c0:0x1e0] = hashlib.sha256(ncch[512:]).digest()
+        header = bytearray(64)
+        struct.pack_into('<IHHIIIIQ', header, 0, 32, 0, 0, 0, 0, 0, 0, len(ncch))
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / 'control.cia'
+            path.write_bytes(header + ncch)
+            self.assertFalse(verify_cia(path)['asset_embedded'])
+            with self.assertRaisesRegex(ValueError, 'section bounds'):
+                verify_cia(path, b'required converted disc asset')
+            ncch[512] ^= 1
+            path.write_bytes(header + ncch)
+            with self.assertRaisesRegex(ValueError, 'hash mismatch'):
+                verify_cia(path)
+
     def test_missing_sdk_stops_without_compilation_success(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
