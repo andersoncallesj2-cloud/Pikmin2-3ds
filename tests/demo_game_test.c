@@ -1,23 +1,45 @@
+/* D02 assertions, updated but intentionally NOT run in this handoff.
+ * Link game.c, camera.c, original_math.c and port_math.c for future host runs. */
 #include "game.h"
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
-static Parameters parms={160,120,10,560,72.5f,1,90,5,.45f};
-static void tick(Game *g,Input in,int n){for(int i=0;i<n;i++)game_step(g,in,1.f/60);}
+static Parameters fixture(void){
+    Parameters p={.move=160,.run=120,.walk=10,.gravity=560,.throw_height=72.5f,.landing_time=1,
+        .call_max=90,.call_min=5,.call_time=.45f,.shake=10,.neutral=.1f,.cursor_threshold=.8f,
+        .stick_clamp=.85f,.cursor_radius=100,.cursor_speed=300,.cursor_look_time=.85f,
+        .enemy_health=750,.enemy_speed=20,.enemy_wake=1,.enemy_attack_radius=40,.enemy_damage=10,
+        .treasure_weight=8,.treasure_max=15,.carcass_weight=10,.carcass_max=20,.treasure_value=90,
+        .carcass_yield=12,.captain_max_health=100,.punch_damage=10,.punch_range=10};
+    for(int captain=0;captain<2;captain++){
+        CameraParameters *c=&p.camera[captain];
+        for(int i=0;i<6;i++)c->preset[i]=(CameraPreset){600,i>=3?60:21,23,38,500,55,1,2500};
+        c->close_distance=250;c->close_angle=12;c->close_fov=35;c->collision_radius=300;
+        c->collision_speed=.005f;c->collision_height=5;c->no_collision_height=25;
+        c->setting=.1f;c->rotation=.15f;c->follow=.6f;c->accel=.005f;c->max_speed=.9f;c->damp=.85f;
+    }
+    return p;
+}
+static void tick(Game *g,Input in,int count){for(int i=0;i<count;i++)game_step(g,in,1.f/60);}
 int main(void){
-    Game g;game_init(&g,parms);
-    tick(&g,(Input){.throw_pressed=true},1);
-    assert(game_count(&g,AIR)==1&&g.throws==1);float peak=0;
-    for(int i=0;i<90;i++){tick(&g,(Input){0},1);if(g.pikis[0].pos.y>peak)peak=g.pikis[0].pos.y;}
-    assert(peak>79&&peak<84&&g.landings==1);assert(game_count(&g,CARRY)==1);
-    tick(&g,(Input){.whistle=true},40);assert(g.recalls==1&&game_count(&g,FOLLOW)==5);
-    tick(&g,(Input){.dismiss=true},1);assert(game_count(&g,IDLE)==5);
-    game_init(&g,parms);g.captain.z=-100;tick(&g,(Input){.x=1},600);assert(g.captain.x<=231.51f&&g.captain.x>220);
-    game_init(&g,parms);g.captain=(V3){100,0,-30};tick(&g,(Input){.z=1},20);assert(g.captain.z<=-8.49f);
-    game_init(&g,parms);for(int i=0;i<3;i++)g.pikis[i].pos=g.crate;
-    tick(&g,(Input){.dismiss=true},1);assert(game_count(&g,CARRY)==3);
-    tick(&g,(Input){0},900);assert(g.delivered==1&&game_count(&g,CARRY)==0);
-    game_init(&g,parms);for(int i=0;i<1800;i++)game_step(&g,game_tour(g.time),1.f/60);
-    assert(g.throws==3&&g.landings==3&&g.delivered==1);
-    printf("PASS: throw trajectory, landing, whistle, dismiss, arena/block collision, carry/delivery, tour\n");return 0;
+    Parameters p=fixture();Game g;game_init(&g,p);
+    tick(&g,(Input){.x=.2f},10);assert(fabsf(g.captain.x)<.01f&&g.cursor_offset.x>0);
+    game_init(&g,p);tick(&g,(Input){.grab_pressed=true,.grab_held=true},1);
+    assert(g.held_piki>=0&&game_count(&g,HELD)==1);
+    tick(&g,(Input){.throw_pressed=true},1);assert(g.throws==1&&game_count(&g,AIR)==1);
+    tick(&g,(Input){0},100);assert(g.landings==1);
+    tick(&g,(Input){.whistle=true},40);assert(game_count(&g,FOLLOW)==SQUAD);
+    game_init(&g,p);tick(&g,(Input){.zoom_pressed=true,.zoom_held=true},1);assert(g.camera.zoom==2);
+    tick(&g,(Input){.zoom_held=true},70);assert(g.camera.close);
+    tick(&g,(Input){0},1);assert(!g.camera.close);
+    tick(&g,(Input){.angle_pressed=true},1);assert(g.camera.high==1);
+    tick(&g,(Input){.switch_pressed=true},1);assert(g.active_captain==1);
+    game_init(&g,p);g.captain.z=-100;tick(&g,(Input){.x=1},600);assert(g.captain.x<=231.51f);
+    game_init(&g,p);g.enemy.dead=true;
+    for(int i=0;i<8;i++){g.pikis[i].state=CARRY;g.pikis[i].item=0;g.pikis[i].pos=g.items[0].pos;}
+    tick(&g,(Input){0},1800);assert(g.items[0].delivered&&g.pokos==90&&!g.enemy.delivered&&g.onion_stored==0);
+    game_init(&g,p);g.enemy.dead=true;g.items[1].pos=(V3){-100,0,80};
+    for(int i=0;i<10;i++){g.pikis[i].state=CARRY;g.pikis[i].item=1;g.pikis[i].pos=g.items[1].pos;}
+    tick(&g,(Input){0},1800);assert(g.enemy.delivered&&g.onion_stored==12&&g.pokos==0&&!g.items[0].delivered);
+    puts("D02 controller and destination assertions passed");return 0;
 }

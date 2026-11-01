@@ -4,7 +4,13 @@
 The earlier ISO-PAL01 renderer failed; that old failure is not a validation of
 the new gameplay renderer. Preserve HW03 as the known working control.
 
-**D01 playable increment:** [build and controls](docs/DEMO_D01.md).
+**D02 hardware handoff:** [current controls, features and limitations](docs/DEMO_D02.md).
+Adds GameCube-style analog cursor/movement and camera adapters, original HUD art,
+two captains, red Onion, Hocotate ship, treasure transport and Bulborb combat/
+carcass transport. Built from the actual ISO; **not runtime-tested**, as requested.
+The native HUD uses original sprites; the full original J2D UI is not ported.
+
+**D01 previous playable increment:** [build and controls](docs/DEMO_D01.md).
 Textured ISO-derived Olimar and five red Pikmin in a small native arena, with
 movement, following, throws, whistle recall and a simplified crate objective.
 Original camera/angle code and adapted mechanics are used; squad AI and the

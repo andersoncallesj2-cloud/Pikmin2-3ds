@@ -1,9 +1,11 @@
-"""Bounded rigid-bind-pose BMD -> native textured triangle batches.
+"""Bounded bind-pose BMD -> native textured triangle batches.
 
 New converter; format references are projectPiki J3DFileBlock/J3DJointFactory,
 J3DShapeFactory and J3DGetTranslateRotateMtx. No original assets in this file.
-This deliberately rejects weighted skinning and unsupported GX vertex formats.
+Supports rigid and weighted bind poses; rejects unsupported GX vertex formats.
 Materials approximate base colour/first texture, not the full GX TEV pipeline.
+Texture matrix index bytes are consumed; animated/reflection UV transforms are
+not implemented. Native padding preserves the first image without resampling.
 """
 import math
 import struct
@@ -111,7 +113,39 @@ def transform(m, v, w=1):
     return tuple(sum(m[i][j]*v[j] for j in range(3))+m[i][3]*w for i in range(3))
 
 
-def convert(data, tint=(255, 255, 255), tint_materials=()):
+def names(block, base):
+    count=block.u16(base)
+    if count>4096: raise ValueError('Name table too large')
+    result=[]
+    for i in range(count):
+        p=base+block.u16(base+6+i*4); raw=block.get(p,len(block.data)-p)
+        if b'\0' not in raw: raise ValueError('Unterminated name')
+        result.append(raw.split(b'\0',1)[0].decode('ascii'))
+    return result
+
+
+def bti(data):
+    b=Block(data);fmt=b.get(0,1)[0];w,h=b.read('HH',2)
+    rgba=texture(fmt,w,h,b.get(b.u32(28),len(data)-b.u32(28)))
+    return w,h,rgba
+
+
+def brk_final_colors(data):
+    """Final C-register colour keys, as used by Onyon::changeMaterial at rest."""
+    if data[:8]!=b'J3D1brk1':raise ValueError('Expected BRK colour animation')
+    b=Block(data[32:]);result={};table=b.u32(32);labels=names(b,b.u32(48))
+    for i in range(b.u16(12)):
+        channels=[]
+        for c in range(4):
+            count,start,kind=b.read('3H',table+i*28+c*6)
+            if not count or kind not in (0,1):raise ValueError('Invalid colour key')
+            index=start if count==1 else start+(count-1)*(3 if kind==0 else 4)+1
+            channels.append(max(0,min(255,b.read('h',b.u32(56+4*c)+2*index)[0])))
+        result[labels[i]]=tuple(channels)
+    return result
+
+
+def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=None, material_colors=None):
     if len(data) > 8*1024*1024 or data[:8] != b'J3D2bmd3':
         raise ValueError('Expected bounded J3D2bmd3')
     source = Block(data)
@@ -126,8 +160,7 @@ def convert(data, tint=(255, 255, 255), tint_materials=()):
     def chunk(tag):
         if tag not in chunks: raise ValueError('Missing BMD chunk '+repr(tag))
         return chunks[tag]
-    if chunk(b'EVP1').u16(8):
-        raise ValueError('Weighted envelopes not supported in this increment')
+    evp=chunk(b'EVP1')
     jnt, inf, drw, shp, vtx, mat, tex = (chunk(t) for t in (b'JNT1', b'INF1', b'DRW1', b'SHP1', b'VTX1', b'MAT3', b'TEX1'))
     parents = {}; shape_material = {}; stack = []; context = (-1, -1); last = context
     p = inf.u32(20)
@@ -168,10 +201,27 @@ def convert(data, tint=(255, 255, 255), tint_materials=()):
         worlds[index] = multiply(world(parent), local) if parent >= 0 else local
         visiting.remove(index)
         return worlds[index]
+    envelopes=[];cursor=0
+    for i in range(evp.u16(8)):
+        count=evp.get(evp.u32(12)+i,1)[0]
+        if not 1<=count<=32:raise ValueError('Invalid envelope count')
+        blended=[[0.0]*4 for _ in range(4)];total=0
+        for j in range(count):
+            joint=evp.u16(evp.u32(16)+2*(cursor+j));weight=evp.read('f',evp.u32(20)+4*(cursor+j))[0]
+            if not math.isfinite(weight) or weight<0:raise ValueError('Invalid envelope weight')
+            rows=evp.read('12f',evp.u32(24)+joint*48)
+            inv=[list(rows[r*4:r*4+4]) for r in range(3)]+[[0,0,0,1]]
+            matrix=multiply(world(joint),inv);total+=weight
+            for r in range(4):
+                for c in range(4):blended[r][c]+=weight*matrix[r][c]
+        if abs(total-1)>.005:raise ValueError('Envelope weights must sum to one')
+        envelopes.append(blended);cursor+=count
     draw_matrices = []
     for i in range(drw.u16(8)):
-        if drw.get(drw.u32(12)+i, 1) != b'\0': raise ValueError('Weighted draw matrix not supported')
-        draw_matrices.append(world(drw.u16(drw.u32(16)+2*i)))
+        flag=drw.get(drw.u32(12)+i,1)[0];index=drw.u16(drw.u32(16)+2*i)
+        if flag==0:draw_matrices.append(world(index))
+        elif flag==1 and index<len(envelopes):draw_matrices.append(envelopes[index])
+        else:raise ValueError('Invalid envelope draw index')
     formats = {}; p = vtx.u32(8)
     for _ in range(32):
         attr, count, kind, frac = vtx.read('IIIB3x', p); p += 16
@@ -194,8 +244,19 @@ def convert(data, tint=(255, 255, 255), tint_materials=()):
     if tex.u16(8) > 32: raise ValueError('Texture count exceeds limit')
     for i in range(tex.u16(8)):
         h = tex.u32(12)+32*i; fmt = tex.get(h,1)[0]; w, he = tex.read('HH',h+2)
-        rgba = texture(fmt,w,he,tex.get(h+tex.u32(h+28),len(tex.data)-h-tex.u32(h+28)))
-        textures.append((w,he,tex.get(h+6,2),tiled_rgba(rgba,w,he)))
+        if external_textures and i in external_textures:
+            w,he,rgba=bti(external_textures[i])
+        else:rgba = texture(fmt,w,he,tex.get(h+tex.u32(h+28),len(tex.data)-h-tex.u32(h+28)))
+        pw=max(8,1<<(w-1).bit_length());ph=max(8,1<<(he-1).bit_length())
+        if (pw,ph)!=(w,he):
+            padded=bytearray(pw*ph*4)
+            for y in range(ph):
+                for x in range(pw):
+                    src=(min(y,he-1)*w+min(x,w-1))*4;p=(y*pw+x)*4
+                    padded[p:p+4]=rgba[src:src+4]
+            rgba=padded
+        textures.append((pw,ph,tex.get(h+6,2),tiled_rgba(rgba,pw,ph),w/pw,he/ph))
+    material_names=names(mat,mat.u32(20))
     batches = []; total_vertices = 0; all_positions = []
     for shape in range(shp.u16(8)):
         if shape not in shape_material: raise ValueError('Shape lacks material')
@@ -203,6 +264,8 @@ def convert(data, tint=(255, 255, 255), tint_materials=()):
         if material < 0 or material >= mat.u16(8): raise ValueError('Invalid material index')
         r = mat.u32(12)+mat.u16(mat.u32(16)+2*material)*332
         color = tuple(v/255 for v in mat.get(mat.u32(32)+mat.u16(r+8)*4,4))
+        if material_colors and material_names[material] in material_colors:
+            color=tuple(v/255 for v in material_colors[material_names[material]])
         if material in tint_materials: color = tuple(color[i]*(tint[i]/255 if i<3 else 1) for i in range(4))
         ti = mat.u16(r+132)
         texture_id = mat.u16(mat.u32(72)+ti*2) if ti != 65535 else -1
@@ -214,7 +277,7 @@ def convert(data, tint=(255, 255, 255), tint_materials=()):
         for _ in range(24):
             a, t = shp.read('II',p); p += 8
             if a == 255: break
-            if not ((a == 0 and t == 1) or (a in (9,10,13) and t in (2,3))):
+            if not ((0 <= a <= 8 and t == 1) or (a in (9,10,13) and t in (2,3))):
                 raise ValueError('Unsupported display-list vertex descriptor')
             attrs.append((a,t))
         else: raise ValueError('Missing vertex descriptor terminator')
@@ -249,7 +312,8 @@ def convert(data, tint=(255, 255, 255), tint_materials=()):
                     light = .55+.45*max(0,sum(a*b for a,b in zip(normal,(.3,.85,.43))))
                     uv = array(13,indices[13]) if 13 in indices else (0,0)
                     # Native sampled texture is flipped vertically in memory.
-                    vertex = (*pos,1,*(color[i]*light for i in range(3)),color[3],uv[0],1-uv[1],0,0)
+                    us,vs=textures[texture_id][4:] if texture_id>=0 else (1,1)
+                    vertex = (*pos,1,*(color[i]*light for i in range(3)),color[3],uv[0]*us,1-uv[1]*vs,0,0)
                     points.append(vertex)
                 if opcode == 0x90:
                     if count%3: raise ValueError('Incomplete triangle list')
@@ -268,7 +332,7 @@ def convert(data, tint=(255, 255, 255), tint_materials=()):
     if not all_positions or total_vertices > 200000: raise ValueError('Empty/oversize model')
     # Simple checked, little-endian runtime container; no raw J3D pointer traversal.
     payload = bytearray()
-    for w,h,wrap,pixels in textures:
+    for w,h,wrap,pixels,_,_ in textures:
         payload.extend(struct.pack('<4I',w,h,wrap[0],wrap[1])); payload.extend(pixels)
     for texture_id,vertices in batches:
         payload.extend(struct.pack('<iI',texture_id,len(vertices)))
@@ -276,4 +340,4 @@ def convert(data, tint=(255, 255, 255), tint_materials=()):
     result = struct.pack('<4s5I',b'P2M1',len(payload),zlib.crc32(payload),len(textures),len(batches),total_vertices)+payload
     bounds = [[min(p[i] for p in all_positions),max(p[i] for p in all_positions)] for i in range(3)]
     return bytes(result), {'vertices':total_vertices,'triangles':total_vertices//3,'textures':len(textures),'batches':len(batches),'bounds':bounds,
-                           'pose':'rigid bind pose','materials':'base colour / first texture; approximate TEV'}
+                           'pose':'bind pose; rigid and weighted matrices','materials':'base colour / first texture; approximate TEV'}

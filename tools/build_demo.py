@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build D01 native gameplay demo from a validated personal Pikmin 2 ISO."""
+"""Build D02 native gameplay demo from a validated personal Pikmin 2 ISO."""
 import argparse
 from datetime import datetime, timezone
 import json
@@ -13,12 +13,13 @@ import tempfile
 from build import ROOT, sdk_environment, sha, verify_cia
 from disc_asset import extract
 from game_archive import rarc
-from j3d_model import convert
+from j3d_model import convert, brk_final_colors
+from ui_assets import convert_hud
 
 
-def parameter(data, key):
+def parameter(data, key, duplicate_equal=False):
     matches = re.findall(rb'\{'+key.encode()+rb'\}\s+4\s+([-+0-9.eE]+)', data)
-    if len(matches) != 1:
+    if len(matches) != 1 and not (duplicate_equal and matches and len(set(matches))==1):
         raise ValueError('Missing/ambiguous gameplay parameter '+key)
     value = float(matches[0])
     if not math.isfinite(value) or value <= 0:
@@ -27,6 +28,7 @@ def parameter(data, key):
 
 
 def run(iso, work_dir=None, makerom=None, tour=False):
+    if tour:raise ValueError('D02 is a manual hardware demo; automated tour is retired')
     if work_dir is None:
         (ROOT/'build').mkdir(exist_ok=True)
         work = Path(tempfile.mkdtemp(prefix='demo-',dir=ROOT/'build'))
@@ -35,12 +37,16 @@ def run(iso, work_dir=None, makerom=None, tour=False):
     (work/'.gitignore').write_text('*\n')
     if any(c.isspace() for c in str(work)): raise ValueError('Choose a build workspace without spaces')
     out=work/'output';out.mkdir()
-    report={'demo':'D01','built_at_utc':datetime.now(timezone.utc).isoformat(),
-            'hardware':'D01 awaiting test; HW03 GPU control passed per user',
+    report={'demo':'D02','built_at_utc':datetime.now(timezone.utc).isoformat(),
+            'hardware':'D02 awaiting user hardware test; no emulator run requested',
             'models':{},'outputs':{},'auto_showcase':tour}
     try:
         paths=['user/Kando/piki/pikis.szs','user/Abe/piki/naviParms.txt',
-               'user/Abe/piki/pikiParms.txt','user/Kando/aiConstants.txt','user/Kando/onyon/arc.szs']
+               'user/Abe/piki/pikiParms.txt','user/Kando/aiConstants.txt','user/Kando/onyon/arc.szs',
+               'user/Kando/ufo/arc.szs','user/Abe/Pellet/pal/ahiru.szs','enemy/data/Chappy/model.szs',
+               'enemy/data/Chappy/moyou_565.1.bti','enemy/data/Chappy/swallow_565.1.bti',
+               'new_screen/eng/res_ground.szs','user/Nishimura/Camera/groundCameraParms.txt',
+               'enemy/parm/enemyParms.szs','user/Abe/Pellet/pal/otakara_config.txt','user/Abe/Pellet/pal/carcass_config.txt']
         resources=dict.fromkeys(paths)
         _,report['disc']=extract(Path(iso),resources=resources)
         archive=rarc(resources[paths[0]])
@@ -50,15 +56,26 @@ def run(iso, work_dir=None, makerom=None, tour=False):
             shutil.copytree(ROOT/'port3ds'/folder,runtime/folder,ignore=ignore)
         app=runtime/'demo';(app/'build').mkdir();romfs=app/'romfs';romfs.mkdir()
         for output,path,tint,mats in [('olimar','orima_model/orima1.bmd',(255,255,255),()),
+                                      ('louie','orima_model/orima3.bmd',(255,255,255),()),
                                       ('red','piki_model/piki_p2_red.bmd',(255,30,0),(0,)),
                                       ('leaf','happa_model/leaf.bmd',(255,255,255),())]:
             asset,info=convert(archive[path],tint,mats)
             (romfs/(output+'.p2m')).write_bytes(asset)
             report['models'][output]={**info,'archive_path':path,'source_sha256':sha(archive[path]),'converted_sha256':sha(asset)}
-        onion=rarc(resources[paths[4]])['goal.bmd']
-        asset,info=convert(onion)
+        onion_archive=rarc(resources[paths[4]])
+        onion=onion_archive['goal.bmd'];colors=brk_final_colors(onion_archive['kidou_red.brk'])
+        asset,info=convert(onion,material_colors=colors)
         (romfs/'onion.p2m').write_bytes(asset)
         report['models']['onion']={**info,'archive_path':paths[4]+'/goal.bmd','source_sha256':sha(onion),'converted_sha256':sha(asset)}
+        report['onion_red_colour_keys']=colors
+        for output,index,name,overrides in [('ship',5,'ufo.bmd',None),('treasure',6,'ahiru.bmd',None),
+                                            ('bulborb',7,'enemy.bmd',{0:resources[paths[8]],1:resources[paths[9]]})]:
+            data=rarc(resources[paths[index]])[name]
+            asset,info=convert(data,external_textures=overrides)
+            (romfs/(output+'.p2m')).write_bytes(asset)
+            report['models'][output]={**info,'archive_path':paths[index]+'/'+name,'source_sha256':sha(data),'converted_sha256':sha(asset)}
+        hud,report['hud_assets']=convert_hud(rarc(resources[paths[10]]))
+        (romfs/'hud.p2u').write_bytes(hud)
         navi,piki=resources[paths[1]],resources[paths[2]]
         gravity=re.findall(rb'(?m)^gravity\s+([0-9.]+)',resources[paths[3]])
         if len(gravity)!=1: raise ValueError('Missing gravity')
@@ -66,7 +83,41 @@ def run(iso, work_dir=None, makerom=None, tour=False):
                 parameter(navi,'p025'),parameter(navi,'p026'),parameter(navi,'p001'),parameter(navi,'p053'),parameter(navi,'p002')]
         if not 0<params[3]<2000 or not 0<params[8]<10: raise ValueError('Unsafe parameter range')
         report['parameters']=dict(zip(['captain_speed','leaf_run','walk','gravity','red_throw_height','landing_time','call_max','call_min','call_time'],params))
-        (romfs/'params.bin').write_bytes(struct.pack('<9f',*params))
+        # The original Navi table intentionally reuses p048 for two equal values.
+        params += [parameter(navi,key,duplicate_equal=(key=='p048')) for key in ('p035','p043','p044','p048','p046','p047','p048')]
+        camera=resources[paths[11]]
+        groups=re.findall(rb'(?m)^\s*\{\s*\r?\n(.*?)^\s*\}',camera,re.S|re.M)
+        if len(groups)<2:raise ValueError('Missing original per-captain camera parameter sections')
+        camera_keys=['cnld','cnla','cnlf','cnlo','cnlw','nldt','nlnc','nlfc',
+                     'cmld','cmla','cmlf','cmlo','cmlw','mldt','mlnc','mlfc',
+                     'cfld','cfla','cflf','cflo','cflw','fldt','flnc','flfc',
+                     'cnhd','cnha','cnhf','cnho','cnhw','nhdt','nhnc','nhfc',
+                     'cmhd','cmha','cmhf','cmho','cmhw','mhdt','mhnc','mhfc',
+                     'cfhd','cfha','cfhf','cfho','cfhw','fhdt','fhnc','fhfc',
+                     'zmdt','zman','zmfv','clcr','clms','clmh','clnh','cpmd','cmmt','cmft','cmta','cmtm','cmtb']
+        report['camera_parameters']=[]
+        for camera in groups[:2]:
+            values=[parameter(camera,key) for key in camera_keys]
+            params+=values;report['camera_parameters'].append(dict(zip(camera_keys,values)))
+        enemy=rarc(resources[paths[12]])['chappy/enemyparm.txt']
+        # Enemy general parameters are a separate block from species-specific fpXX keys.
+        general=re.findall(rb'(?m)^\s*\{\s*\r?\n(.*?)^\s*\}',enemy,re.S|re.M)
+        general=next((g for g in general if b'{fp24}' in g),None)
+        if general is None:raise ValueError('Missing original Bulborb general parameters')
+        params += [parameter(general,key) for key in ('fp00','fp06','fp11','fp22','fp24')]
+        def config(data,name,key):
+            records=re.findall(rb'\{([^{}]+)\}',data)
+            records=[r for r in records if re.search(rb'\bname\s+'+name.encode()+rb'\s',r)]
+            if len(records)!=1:raise ValueError('Missing item config '+name)
+            found=re.findall(rb'(?m)^\s*'+key.encode()+rb'\s+([0-9.]+)',records[0])
+            if len(found)!=1:raise ValueError('Missing item field '+key)
+            return float(found[0])
+        treasure,carcass=resources[paths[13]],resources[paths[14]]
+        params += [config(treasure,'ahiru','min'),config(treasure,'ahiru','max'),config(carcass,'Chappy','min'),config(carcass,'Chappy','max'),config(treasure,'ahiru','money')]
+        report['carry_weights']={'treasure':params[-5:-3],'carcass':params[-3:-1],'treasure_pokos':params[-1]}
+        params += [config(carcass,'Chappy','pikicountmin'),parameter(navi,'p050'),parameter(navi,'p051'),parameter(navi,'p052')]
+        if len(params)!=152:raise ValueError('Native parameter layout mismatch')
+        (romfs/'params.bin').write_bytes(struct.pack('<152f',*params))
         env,compiler=sdk_environment(work)
         report['compiler']=subprocess.check_output([str(compiler),'--version'],text=True).splitlines()[0]
         def command(args,log):
@@ -78,12 +129,12 @@ def run(iso, work_dir=None, makerom=None, tour=False):
         if elf[:6]!=b'\x7fELF\x01\x01' or struct.unpack_from('<H',elf,18)[0]!=40: raise ValueError('Expected ARM ELF')
         x3ds=(app/'pikmin2-demo.3dsx').read_bytes()
         if x3ds[:4]!=b'3DSX' or any((romfs/name).read_bytes() not in x3ds for name in ('red.p2m','onion.p2m')): raise ValueError('3DSX missing model')
-        shutil.copy2(app/'pikmin2-demo.3dsx',out/'Pikmin2-Demo-D01.3dsx')
+        shutil.copy2(app/'pikmin2-demo.3dsx',out/'Pikmin2-Demo-D02.3dsx')
         packager=shutil.which(makerom or 'makerom')
         if not packager: raise ValueError('makerom missing; pass --makerom')
-        command([str(Path(packager).resolve()),'-f','cia','-o',out/'Pikmin2-Demo-D01.cia','-rsf','demo.rsf','-target','t','-elf','pikmin2-demo.elf','-icon','pikmin2-demo.smdh','-banner','../assets/menu.bnr','-desc','app:4'],'package.log')
-        report['cia_checks']=verify_cia(out/'Pikmin2-Demo-D01.cia',(romfs/'red.p2m').read_bytes())
-        verify_cia(out/'Pikmin2-Demo-D01.cia',(romfs/'onion.p2m').read_bytes())
+        command([str(Path(packager).resolve()),'-f','cia','-o',out/'Pikmin2-Demo-D02.cia','-rsf','demo.rsf','-target','t','-elf','pikmin2-demo.elf','-icon','pikmin2-demo.smdh','-banner','../assets/menu.bnr','-desc','app:4'],'package.log')
+        report['cia_checks']=verify_cia(out/'Pikmin2-Demo-D02.cia',(romfs/'red.p2m').read_bytes())
+        for file in romfs.iterdir():verify_cia(out/'Pikmin2-Demo-D02.cia',file.read_bytes())
         report['source_hashes']={str(f.relative_to(runtime)):sha(f.read_bytes()) for f in runtime.rglob('*') if f.is_file() and f.suffix in ('.c','.h','.pica')}
         for f in out.iterdir():report['outputs'][f.name]={'sha256':sha(f.read_bytes()),'bytes':f.stat().st_size}
         report['result']='PASS: ARM compilation, real disc conversion, CIA/3DSX packaging'
