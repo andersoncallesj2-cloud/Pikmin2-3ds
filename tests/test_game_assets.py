@@ -29,6 +29,6 @@ class GameAssets(unittest.TestCase):
     def test_morton_bytes_and_vertical_orientation(self):
         pixels=b''.join(bytes([x,y,13,255]) for y in range(8) for x in range(8))
         out=tiled_rgba(pixels,8,8)
-        self.assertEqual(out[:4],bytes([255,13,7,0]))
-        self.assertEqual(out[4:8],bytes([255,13,7,1]))
-        self.assertEqual(out[8:12],bytes([255,13,6,0]))
+        self.assertEqual(out[:4],bytes([255,13,0,0]))
+        self.assertEqual(out[4:8],bytes([255,13,0,1]))
+        self.assertEqual(out[8:12],bytes([255,13,1,0]))

@@ -15,7 +15,7 @@ static CameraPreset target(const Game *g){
 }
 static V3 goal_position(const Game *g,CameraPreset p){
     V3 pos={g->captain.x*p.weight,g->captain.y*p.weight,g->captain.z*p.weight};float weight=p.weight;
-    for(int i=0;i<SQUAD;i++)if(g->pikis[i].state==FOLLOW){
+    for(int i=0;i<SQUAD;i++)if(g->pikis[i].state==FOLLOW&&g->pikis[i].owner==g->active_captain){
         pos.x+=g->pikis[i].pos.x;pos.y+=g->pikis[i].pos.y;pos.z+=g->pikis[i].pos.z;weight++;
     }
     pos.x/=weight;pos.y/=weight;pos.z/=weight;
@@ -57,7 +57,11 @@ void play_camera_step(Game *g,Input in,float dt){
         float step=(c->close?p->close_distance:p->collision_radius)/15;
         for(int i=1;i<=15;i++){
             float radius=step*i,x=pos.x+sinf(c->target_theta)*radius*cosf(phi),z=pos.z+cosf(c->target_theta)*radius*cosf(phi);
-            float floor=(fabsf(x-100)<25&&fabsf(z-25)<25)?35:0;
+            float floor=0;
+            for(unsigned j=0;j<MAX_OBSTACLES;j++){
+                const Obstacle *o=&g->obstacles[j];
+                if(fabsf(x-o->pos.x)<o->half_x&&fabsf(z-o->pos.z)<o->half_z)floor=fmaxf(floor,o->height);
+            }
             float height=floor+i*p->collision_height;
             if(height>pos.y+radius*sinf(phi))phi=fmaxf(phi,atan2f(height-pos.y,radius));
         }

@@ -92,7 +92,12 @@ def texture(fmt, width, height, data):
 
 
 def tiled_rgba(pixels, width, height):
-    """3DS RGBA8: 8x8 Morton tiles, ABGR bytes, vertical orientation for UVs."""
+    """3DS RGBA8: 8x8 Morton tiles, ABGR bytes; source top row at native v=1.
+
+    PICA's v axis is inverted relative to its tile row order. Do not flip the
+    pixels again: native quads already convert GX v with (1-v). D02 did both,
+    inverting glyphs and sampling the padding instead of the portrait's face.
+    """
     if width < 8 or height < 8 or width & (width-1) or height & (height-1):
         raise ValueError('Native textures require power-of-two dimensions >=8')
     out = bytearray(len(pixels))
@@ -100,7 +105,7 @@ def tiled_rgba(pixels, width, height):
         for x in range(width):
             morton = sum(((x >> b & 1) << (2*b)) | ((y >> b & 1) << (2*b+1)) for b in range(3))
             dst = ((y//8)*(width//8)*64+(x//8)*64+morton)*4
-            src = ((height-1-y)*width+x)*4
+            src = (y*width+x)*4
             out[dst:dst+4] = pixels[src:src+4][::-1]
     return bytes(out)
 
@@ -145,7 +150,7 @@ def brk_final_colors(data):
     return result
 
 
-def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=None, material_colors=None):
+def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=None, material_colors=None, unlit=False, skinned=False):
     if len(data) > 8*1024*1024 or data[:8] != b'J3D2bmd3':
         raise ValueError('Expected bounded J3D2bmd3')
     source = Block(data)
@@ -190,13 +195,15 @@ def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=Non
         visiting.add(index)
         r = jnt.u32(12)+jnt.u16(jnt.u32(16)+2*index)*64
         sx0, sy0, sz0, rx, ry, rz, tx, ty, tz = jnt.read('3f3h2x3f', r+4)
-        if any(abs(s-1) > 1e-5 for s in (sx0, sy0, sz0)):
+        if parents[index]>=0 and any(abs(s-1) > 1e-5 for s in (sx0, sy0, sz0)):
             raise ValueError('Non-unit joint scale requires scale-compensation support')
         sx, sy, sz = (math.sin(a*math.pi/32768) for a in (rx, ry, rz))
         cx, cy, cz = (math.cos(a*math.pi/32768) for a in (rx, ry, rz))
         local = [[cz*cy, sx*cz*sy-cx*sz, cx*cz*sy+sx*sz, tx],
                  [sz*cy, sx*sz*sy+cx*cz, cx*sz*sy-sx*cz, ty],
                  [-sy, cy*sx, cy*cx, tz], [0, 0, 0, 1]]
+        for row in range(3):
+            for col,scale in enumerate((sx0,sy0,sz0)):local[row][col]*=scale
         parent = parents[index]
         worlds[index] = multiply(world(parent), local) if parent >= 0 else local
         visiting.remove(index)
@@ -233,6 +240,11 @@ def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=Non
     def array(attr, index):
         if attr not in formats or attr not in array_map: raise ValueError('Unsupported vertex array')
         count, kind, frac = formats[attr]
+        if attr in (11,12):
+            if kind!=5:raise ValueError('Only RGBA8 indexed vertex colours supported')
+            start=offsets[array_map[attr]];end=min([o for o in offsets if o>start]+[len(vtx.data)])
+            if not start or (index+1)*4>end-start:raise ValueError('Vertex colour index out of bounds')
+            return tuple(v/255 for v in vtx.get(start+index*4,4))
         n = (3 if count else 2) if attr == 9 else 3 if attr == 10 else (2 if count else 1)
         types = {0:('B',1), 1:('b',1), 2:('H',2), 3:('h',2), 4:('f',4)}
         if kind not in types: raise ValueError('Unsupported vertex component encoding')
@@ -263,6 +275,7 @@ def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=Non
         material = shape_material[shape]
         if material < 0 or material >= mat.u16(8): raise ValueError('Invalid material index')
         r = mat.u32(12)+mat.u16(mat.u32(16)+2*material)*332
+        material_mode=mat.get(r,1)[0]
         color = tuple(v/255 for v in mat.get(mat.u32(32)+mat.u16(r+8)*4,4))
         if material_colors and material_names[material] in material_colors:
             color=tuple(v/255 for v in material_colors[material_names[material]])
@@ -277,7 +290,7 @@ def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=Non
         for _ in range(24):
             a, t = shp.read('II',p); p += 8
             if a == 255: break
-            if not ((0 <= a <= 8 and t == 1) or (a in (9,10,13) and t in (2,3))):
+            if not ((0 <= a <= 8 and t == 1) or (a in (9,10,11,12,13) and t in (2,3))):
                 raise ValueError('Unsupported display-list vertex descriptor')
             attrs.append((a,t))
         else: raise ValueError('Missing vertex descriptor terminator')
@@ -307,13 +320,16 @@ def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=Non
                     slot = indices.get(0,0)//3
                     if slot >= len(palette) or palette[slot] >= len(draw_matrices): raise ValueError('Invalid draw matrix slot')
                     matrix = draw_matrices[palette[slot]]
-                    pos = transform(matrix,array(9,indices[9]))
+                    pos = array(9,indices[9]) if skinned else transform(matrix,array(9,indices[9]))
                     normal = transform(matrix,array(10,indices[10]),0) if 10 in indices else (0,1,0)
-                    light = .55+.45*max(0,sum(a*b for a,b in zip(normal,(.3,.85,.43))))
+                    light = 1 if unlit else .55+.45*max(0,sum(a*b for a,b in zip(normal,(.3,.85,.43))))
                     uv = array(13,indices[13]) if 13 in indices else (0,0)
+                    vertex_color=array(11,indices[11]) if 11 in indices else (1,1,1,1)
                     # Native sampled texture is flipped vertically in memory.
                     us,vs=textures[texture_id][4:] if texture_id>=0 else (1,1)
-                    vertex = (*pos,1,*(color[i]*light for i in range(3)),color[3],uv[0]*us,1-uv[1]*vs,0,0)
+                    bone=(palette[slot]+1)*3 if skinned else 0
+                    if bone>87:raise ValueError('Animated palette exceeds PICA uniform budget')
+                    vertex = (*pos,1,*(color[i]*light*vertex_color[i] for i in range(3)),color[3]*vertex_color[3],uv[0]*us,1-uv[1]*vs,bone,0)
                     points.append(vertex)
                 if opcode == 0x90:
                     if count%3: raise ValueError('Incomplete triangle list')
@@ -328,16 +344,16 @@ def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=Non
                     vertices.extend(tri)
                     all_positions.extend(v[:3] for v in tri)
                 if len(vertices) > 150000: raise ValueError('Triangle expansion limit exceeded')
-        batches.append((texture_id,vertices)); total_vertices += len(vertices)
+        batches.append((texture_id,vertices,material_mode)); total_vertices += len(vertices)
     if not all_positions or total_vertices > 200000: raise ValueError('Empty/oversize model')
     # Simple checked, little-endian runtime container; no raw J3D pointer traversal.
     payload = bytearray()
     for w,h,wrap,pixels,_,_ in textures:
         payload.extend(struct.pack('<4I',w,h,wrap[0],wrap[1])); payload.extend(pixels)
-    for texture_id,vertices in batches:
-        payload.extend(struct.pack('<iI',texture_id,len(vertices)))
+    for texture_id,vertices,mode in batches:
+        payload.extend(struct.pack('<iII',texture_id,len(vertices),mode))
         for vertex in vertices: payload.extend(struct.pack('<12f',*vertex))
-    result = struct.pack('<4s5I',b'P2M1',len(payload),zlib.crc32(payload),len(textures),len(batches),total_vertices)+payload
+    result = struct.pack('<4s5I',b'P2M2',len(payload),zlib.crc32(payload),len(textures),len(batches),total_vertices)+payload
     bounds = [[min(p[i] for p in all_positions),max(p[i] for p in all_positions)] for i in range(3)]
     return bytes(result), {'vertices':total_vertices,'triangles':total_vertices//3,'textures':len(textures),'batches':len(batches),'bounds':bounds,
                            'pose':'bind pose; rigid and weighted matrices','materials':'base colour / first texture; approximate TEV'}

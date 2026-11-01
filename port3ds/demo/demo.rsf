@@ -14,7 +14,7 @@ Option:
   EnableCrypt: false
 SystemControlInfo:
   SaveDataSize: 0KB
-  RemasterVersion: 1
+  RemasterVersion: 2
   StackSize: 0x40000
 AccessControlInfo:
   FileSystemAccess:

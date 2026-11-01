@@ -1,0 +1,54 @@
+{
+  "upstream_commit": "999140f3521e22619547d5d61862a6577ea73882",
+  "license": "CC0-1.0",
+  "functions": [
+    {
+      "source": "src/plugProjectYamashitaU/carryInfoMgr.cpp",
+      "signature": "void CarryInfo::update(",
+      "sha256": "27fdcdfc3783ba536d4ea28a832db72f0d173fc21b0c1f2074367ab3386344fa",
+      "body": "unchanged; native compatibility types/GX emission wrappers above",
+      "body_sha256": "ad79527e8ee9fde7aee52c750e89713eea35cf427764548d74c468b4b545f535",
+      "sha256_scope": "complete upstream function; body_sha256 excludes signature"
+    },
+    {
+      "source": "src/plugProjectYamashitaU/carryInfoMgr.cpp",
+      "signature": "f32 CarryInfo::drawNumber(",
+      "sha256": "855d81cec29e4ae5008556e639b2e579e70655cf43708287425616a6a92f0628",
+      "body": "unchanged; native compatibility types/GX emission wrappers above",
+      "body_sha256": "a81ada38f9f379a90c58e74566cf75b230570d0f930928a78c07e9b765f56060",
+      "sha256_scope": "complete upstream function; body_sha256 excludes signature"
+    },
+    {
+      "source": "src/plugProjectYamashitaU/carryInfoMgr.cpp",
+      "signature": "void CarryInfo::drawNumberPrim(",
+      "sha256": "2b6bc1fd8ab6cf08b827c76decb85b775946e41284c90c23fb7debb848e45a37",
+      "body": "unchanged; native compatibility types/GX emission wrappers above",
+      "body_sha256": "41a5672794c3ef4d2b157b5753bee856c1d26f957d8d3a06f33b99edfecb2c48",
+      "sha256_scope": "complete upstream function; body_sha256 excludes signature"
+    },
+    {
+      "source": "src/plugProjectYamashitaU/lifeGaugeMgr.cpp",
+      "signature": "void LifeGauge::init(",
+      "sha256": "5e826f4d037f3fbaf113ff8036ff86ae5535b4317cf307c71258252381eb509a",
+      "body": "unchanged; native compatibility types/GX emission wrappers above",
+      "body_sha256": "999410f6ad9ba24be6ef49e0ea66f4776d2771bfd33cda6c206c7ff465779bae",
+      "sha256_scope": "complete upstream function; body_sha256 excludes signature"
+    },
+    {
+      "source": "src/plugProjectYamashitaU/lifeGaugeMgr.cpp",
+      "signature": "void LifeGauge::update(",
+      "sha256": "5f05a274063f0c2dd4ff9e2b1e471da3767cba49022634e5f2bd40b0e9f47cc4",
+      "body": "unchanged; native compatibility types/GX emission wrappers above",
+      "body_sha256": "087cc05b3e44cbc1f44472fc9aeba8c5322f191918122d6edc1cb3c104bf7155",
+      "sha256_scope": "complete upstream function; body_sha256 excludes signature"
+    },
+    {
+      "source": "src/plugProjectYamashitaU/lifeGaugeMgr.cpp",
+      "signature": "void LifeGauge::draw(",
+      "sha256": "71aeea7c3b72c321b23c7dbe5de33d19e2c8de5c826083ca48a333ad747a1518",
+      "body": "unchanged; native compatibility types/GX emission wrappers above",
+      "body_sha256": "969a44aed8e402dc27a731cb060c7a1baf75bbf41f06213fc6d87b59daaab763",
+      "sha256_scope": "complete upstream function; body_sha256 excludes signature"
+    }
+  ]
+}

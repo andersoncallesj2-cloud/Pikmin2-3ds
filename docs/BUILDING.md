@@ -1,8 +1,15 @@
+# Current gameplay demo build
+
+For **Pikmin 2 - 3DS port D03**, use [the current build instructions](DEMO_D03.md#build-and-hardware-feedback).
+The gameplay builder now requires `bannertool` as well as devkitPro and makerom.
+Pass its absolute path with `--bannertool`. Old diagnostic instructions below
+continue to describe their separate historical targets.
+
 # Building the native resource prototype
 
 The new builder implements a small, genuine data path: read a local supported
-ISO → extract `opening.bnr` → decode its image → compile the native ARM11 runtime
-with that image in RomFS → package CIA and/or 3DSX. It is not a full-game compiler.
+ISO â†’ extract `opening.bnr` â†’ decode its image â†’ compile the native ARM11 runtime
+with that image in RomFS â†’ package CIA and/or 3DSX. It is not a full-game compiler.
 A real European GPVP01 revision-0 ISO has now passed the Windows pipeline.
 Physical New 3DS rendering remains unverified. See [session evidence](PAL_FIRST_BUILD.md).
 
@@ -52,16 +59,16 @@ Physical New 3DS rendering remains unverified. See [session evidence](PAL_FIRST_
 
    ```text
    build/my-private-test/
-   ├── extracted/opening.bnr
-   ├── converted/banner.p2b
-   ├── runtime/                 # staged source, RomFS and compiler intermediates
-   ├── logs/compile.log
-   ├── logs/package.log
-   └── output/
-       ├── Pikmin2-3DS.cia
-       ├── Pikmin2-3DS.3dsx     # only with --target both or 3dsx
-       ├── build-report.txt
-       └── build-report.json
+   â”œâ”€â”€ extracted/opening.bnr
+   â”œâ”€â”€ converted/banner.p2b
+   â”œâ”€â”€ runtime/                 # staged source, RomFS and compiler intermediates
+   â”œâ”€â”€ logs/compile.log
+   â”œâ”€â”€ logs/package.log
+   â””â”€â”€ output/
+       â”œâ”€â”€ Pikmin2-3DS.cia
+       â”œâ”€â”€ Pikmin2-3DS.3dsx     # only with --target both or 3dsx
+       â”œâ”€â”€ build-report.txt
+       â””â”€â”€ build-report.json
    ```
 
    Without `--work-dir`, a fresh `build/iso-prototype-<suffix>/` directory is
@@ -107,7 +114,7 @@ animation or visual correctness. It does **not** convert or render the model.
   disc hash or validation of every game archive.
 - **Extraction:** copy the actual banner bytes into this build's private folder;
   record size and SHA-256. No game data or tools are downloaded by the builder.
-- **Conversion:** decode big-endian 4×4 RGB5A3 tiles into 96×32 row-major RGB8;
+- **Conversion:** decode big-endian 4Ã—4 RGB5A3 tiles into 96Ã—32 row-major RGB8;
   composite alpha on black, preserve dimensions and add a versioned CRC header.
   This is an image resource conversion, not J3D/model conversion.
 - **Compilation:** stage the existing selected original source and native

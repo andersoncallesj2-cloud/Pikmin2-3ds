@@ -21,3 +21,6 @@ __pycache__/
 *.dae
 private-models/
 *.p2m
+*.p2a
+*.p2u
+*.p2s

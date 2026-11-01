@@ -1,4 +1,25 @@
-# Port status — limited ISO resource pipeline; hardware gate open
+# Current status: Pikmin 2 - 3DS port D03
+
+D03 is compiled and privately packaged for New 3DS hardware feedback. It has
+not been run in an emulator, on the console or through gameplay tests.
+[Current features, source accounting and limitations](docs/DEMO_D03.md).
+
+The user confirmed HW03 works. The subsequent D02 hardware photo shows native
+textured models and an advancing GPU frame count, with inverted HUD sprites,
+limited projection and translucent Onions. D03 addresses those paths and adds
+the larger three-colour demo, original animation frames and selected streamed
+audio. Visual correctness and gameplay performance remain unverified for D03.
+
+The full original AI, J2D/menu, particle and JAudio sequence systems remain
+unfinished. This is a hybrid native prototype, with nine unchanged original
+function bodies, adapted mechanics and new world/gameplay glue. Assets are
+converted from the personal ISO, not checked into the public repository.
+
+## Historical diagnostics below
+
+The following sections describe older builds and failures, not D03 status.
+
+# Port status â€” limited ISO resource pipeline; hardware gate open
 
 Target: genuine original-engine native New Nintendo 3DS port. No remake or
 emulation path. Current priority: **Phase 0, real-hardware renderer diagnosis**.

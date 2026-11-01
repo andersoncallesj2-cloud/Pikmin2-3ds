@@ -42,8 +42,8 @@ ROMFS		:= romfs
 #GFXBUILD	:=	$(ROMFS)/gfx
 
 #---------------------------------------------------------------------------------
-APP_TITLE := Pikmin 2 Demo D02
-APP_DESCRIPTION := GameCube controls and gameplay demo
+APP_TITLE := Pikmin 2 - 3DS port
+APP_DESCRIPTION := Pikmin 2 - 3DS port
 APP_AUTHOR := Port prototype
 
 # options for code generation

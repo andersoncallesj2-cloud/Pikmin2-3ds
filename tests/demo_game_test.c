@@ -1,5 +1,6 @@
-/* D02 assertions, updated but intentionally NOT run in this handoff.
- * Link game.c, camera.c, original_math.c and port_math.c for future host runs. */
+/* D03 assertions, updated but intentionally NOT run in this handoff.
+ * Link game.c, camera.c, original_follow.c, original_math.c and port_math.c; include the
+ * private build source folder for generated demo_settings.h for future host runs. */
 #include "game.h"
 #include <assert.h>
 #include <math.h>
@@ -28,18 +29,20 @@ int main(void){
     assert(g.held_piki>=0&&game_count(&g,HELD)==1);
     tick(&g,(Input){.throw_pressed=true},1);assert(g.throws==1&&game_count(&g,AIR)==1);
     tick(&g,(Input){0},100);assert(g.landings==1);
-    tick(&g,(Input){.whistle=true},40);assert(game_count(&g,FOLLOW)==SQUAD);
+    tick(&g,(Input){.whistle=true},40);assert(game_count(&g,FOLLOW)==30);
     game_init(&g,p);tick(&g,(Input){.zoom_pressed=true,.zoom_held=true},1);assert(g.camera.zoom==2);
     tick(&g,(Input){.zoom_held=true},70);assert(g.camera.close);
     tick(&g,(Input){0},1);assert(!g.camera.close);
     tick(&g,(Input){.angle_pressed=true},1);assert(g.camera.high==1);
     tick(&g,(Input){.switch_pressed=true},1);assert(g.active_captain==1);
-    game_init(&g,p);g.captain.z=-100;tick(&g,(Input){.x=1},600);assert(g.captain.x<=231.51f);
-    game_init(&g,p);g.enemy.dead=true;
+    game_init(&g,p);g.captain.z=-100;tick(&g,(Input){.x=1},600);assert(g.captain.x<=611.51f);
+    game_init(&g,p);assert(game_field_count(&g)==30&&game_total_count(&g)==90);
+    for(unsigned i=0;i<g.enemy_count;i++)g.enemies[i].delivered=g.enemies[i].dead=true;
     for(int i=0;i<8;i++){g.pikis[i].state=CARRY;g.pikis[i].item=0;g.pikis[i].pos=g.items[0].pos;}
-    tick(&g,(Input){0},1800);assert(g.items[0].delivered&&g.pokos==90&&!g.enemy.delivered&&g.onion_stored==0);
-    game_init(&g,p);g.enemy.dead=true;g.items[1].pos=(V3){-100,0,80};
-    for(int i=0;i<10;i++){g.pikis[i].state=CARRY;g.pikis[i].item=1;g.pikis[i].pos=g.items[1].pos;}
-    tick(&g,(Input){0},1800);assert(g.enemy.delivered&&g.onion_stored==12&&g.pokos==0&&!g.items[0].delivered);
-    puts("D02 controller and destination assertions passed");return 0;
+    tick(&g,(Input){0},3000);assert(g.items[0].delivered&&g.pokos==90);
+    game_init(&g,p);g.captain=game_onion_position(1);
+    tick(&g,(Input){.grab_pressed=true},1);assert(g.onion_menu==1);
+    tick(&g,(Input){.menu_delta=10},1);tick(&g,(Input){.menu_accept=true},1);
+    assert(g.onion_stored[1]==10&&game_field_count(&g)==40);
+    puts("D03 controller and destination assertions passed");return 0;
 }
