@@ -1,4 +1,4 @@
-# D01 playable increment â€” 1 November 2026
+# D01 playable increment — 1 November 2026
 
 Build with Python 3.10+, installed devkitPro devkitARM/libctru/Citro3D and makerom:
 

@@ -1,4 +1,4 @@
-# Pikmin 2 native New 3DS port â€” prototype builder
+# Pikmin 2 native New 3DS port — prototype builder
 
 **Latest hardware feedback:** the user reports HW03 works completely on New 3DS XL.
 The earlier ISO-PAL01 renderer failed; that old failure is not a validation of
@@ -22,7 +22,7 @@ python tools/build.py --iso "/path/to/Pikmin2.iso" --target cia
 ```
 
 With an installed devkitPro SDK and `makerom`, this builds a native app that reads
-the disc's **actual `opening.bnr`**, converts its 96Ã—32 RGB5A3 image, embeds it in
+the disc's **actual `opening.bnr`**, converts its 96×32 RGB5A3 image, embeds it in
 RomFS and displays it beside the diagnostic spheres. It reuses the original
 Section lifecycle, camera math and debug graphics extracts. It is **not a game
 compiler, original model loader or playable Pikmin 2**.
@@ -37,9 +37,9 @@ there is no checksum bypass. **RVZ input now uses an installed DolphinTool**;
 pass `--dolphin-tool "/path/to/DolphinTool"` if it is not on PATH. CISO remains
 unsupported. RVZ conversion has been checked with synthetic data only.
 
-**[Build tutorial and output locations](docs/BUILDING.md)** Â·
-**[Runtime details](port3ds/iso_prototype/README.md)** Â·
-**[Synthetic smoke-test CIA](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-iso-fixture.cia)** Â·
+**[Build tutorial and output locations](docs/BUILDING.md)** ·
+**[Runtime details](port3ds/iso_prototype/README.md)** ·
+**[Synthetic smoke-test CIA](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-iso-fixture.cia)** ·
 **[Synthetic smoke-test 3DSX](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-iso-fixture.3dsx)**
 
 The public smoke build contains a generated colour pattern, **no Nintendo asset**.
@@ -60,7 +60,7 @@ game data. This remains a banner probe, not a character/gameplay build.
 
 ## Optional Olimar model test (HW02)
 
-**[Windows preparation kit](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-model-test-windows.zip)** Â· **[CIA](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-modeldiag.cia)** Â· **[Instructions](port3ds/modeldiag/README.md)**
+**[Windows preparation kit](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-model-test-windows.zip)** · **[CIA](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-modeldiag.cia)** · **[Instructions](port3ds/modeldiag/README.md)**
 
 The supplied Olimar OBJ/MTL (2,210 triangles) renders privately beside the three spheres in Azahar. It is currently untextured: original texture PNG files are not available to the converter, and helmet transparency/animation are not implemented. Real hardware remains unverified.
 
@@ -70,7 +70,7 @@ This is an additional static-model test, not original J3D/character gameplay int
 
 ## Download the new HW01 diagnostic
 
-**[CIA](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-hwdiag.cia)** Â· **[3DSX](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-hwdiag.3dsx)** Â· **[Exact test instructions](docs/TESTING.md)**
+**[CIA](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-hwdiag.cia)** · **[3DSX](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-hwdiag.3dsx)** · **[Exact test instructions](docs/TESTING.md)**
 
 1. Copy the 3DSX to `/3ds/pikmin2-hwdiag/` and open it in Homebrew Launcher, or install the separate diagnostic CIA.
 2. It starts with magenta clear colour. Check that the bottom heartbeat advances.
@@ -82,13 +82,13 @@ HW01 adds real API checks, measured queue-busy time, a nonblocking queue polling
 
 The final CIA installs and runs all six stages in Azahar; colour/depth switches and clean START exit work. Physical New 3DS testing is **pending**. The original viewer/source/binaries remain below as an unchanged baseline.
 
-[Port status](PORT_STATUS.md) Â· [Open Nectar/original-engine audit](docs/ENGINE_INTEGRATION.md) Â· [Build and private ISO/RVZ/CISO workflow](docs/BUILDING.md)
+[Port status](PORT_STATUS.md) · [Open Nectar/original-engine audit](docs/ENGINE_INTEGRATION.md) · [Build and private ISO/RVZ/CISO workflow](docs/BUILDING.md)
 
 ---
 
 # Pikmin 2 original-engine port: first boot milestone
 
-**[Archived viewer CIA â€” hardware issue](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-port.cia)** Â· **[Download the Homebrew Launcher 3DSX](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-port.3dsx)**
+**[Archived viewer CIA — hardware issue](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-port.cia)** · **[Download the Homebrew Launcher 3DSX](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-port.3dsx)**
 
 This first milestone boots the original Section lifecycle, original debug graphics and camera/game math on 3DS, with a ported THP movie-audio decoder. **It is not playable Pikmin 2 yet.** Original BootSection, title, levels, Pikmin AI and JAudio are not linked. No replacement gameplay/AI engine is used by this build.
 
