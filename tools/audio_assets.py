@@ -55,7 +55,12 @@ def build(resources,romfs,report):
     for name,path in zip(('music','treasure-jingle','captain-down','pikmin-greeting'),PATHS):
         data,info=decode(resources[path]);(romfs/(name+'.p2s')).write_bytes(data)
         report['audio']['streams'][name]={'source':path,**info}
+    import wave
+    data=(romfs/'pikmin-greeting.p2s').read_bytes();rate=struct.unpack_from('<I',data,4)[0]
+    with wave.open(str(romfs.parent.parent/'assets/menu.wav'),'wb') as w:w.setnchannels(2);w.setsampwidth(2);w.setframerate(rate);w.writeframes(data[24:])
     build_effects(resources,romfs,report)
+    from event_audio import build as events
+    events(resources,romfs,report,PATHS,COEFS)
 
 def build_effects(resources,romfs,report):
     from game_archive import rarc

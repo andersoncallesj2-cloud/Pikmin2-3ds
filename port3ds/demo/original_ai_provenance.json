@@ -1,0 +1,8 @@
+{
+  "source": "projectPiki/pikmin2/src/plugProjectKandoU/aiFree.cpp",
+  "commit": "999140f3521e22619547d5d61862a6577ea73882",
+  "function": "ActFree::exec",
+  "body": "unchanged",
+  "body_sha256": "55fa4984016c2abe5e4103fcfb8297f589802a01cf2230519988c2bfd0b16077",
+  "limitations": "Native world adapters and simplified ActBore/ActGather; full Brain and other original actions are not linked"
+}

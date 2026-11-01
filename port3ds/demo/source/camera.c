@@ -5,6 +5,7 @@
  * Vibration, caves, movies and original map collision are not ported here. */
 #include "game.h"
 #include "port_math.h"
+#include "stage.h"
 #include <math.h>
 static float radians(float d){return d*.01745329252f;}
 static float rate(float r,float dt){return 1-powf(1-r,dt*30);}
@@ -57,7 +58,7 @@ void play_camera_step(Game *g,Input in,float dt){
         float step=(c->close?p->close_distance:p->collision_radius)/15;
         for(int i=1;i<=15;i++){
             float radius=step*i,x=pos.x+sinf(c->target_theta)*radius*cosf(phi),z=pos.z+cosf(c->target_theta)*radius*cosf(phi);
-            float floor=0;
+            float floor=g->stage?stage_height(x,z,pos.y):0;
             for(unsigned j=0;j<MAX_OBSTACLES;j++){
                 const Obstacle *o=&g->obstacles[j];
                 if(fabsf(x-o->pos.x)<o->half_x&&fabsf(z-o->pos.z)<o->half_z)floor=fmaxf(floor,o->height);

@@ -1,19 +1,16 @@
-# Current status: Pikmin 2 - 3DS port D03
+# Current status: Pikmin 2 - 3DS port D05
 
-D03 is compiled and privately packaged for New 3DS hardware feedback. It has
-not been run in an emulator, on the console or through gameplay tests.
-[Current features, source accounting and limitations](docs/DEMO_D03.md).
+[Current features, controls, original-code accounting and limitations](docs/DEMO_D05.md).
 
-The user confirmed HW03 works. The subsequent D02 hardware photo shows native
-textured models and an advancing GPU frame count, with inverted HUD sprites,
-limited projection and translucent Onions. D03 addresses those paths and adds
-the larger three-colour demo, original animation frames and selected streamed
-audio. Visual correctness and gameplay performance remain unverified for D03.
+D05 compiles and privately packages for 3DS. The user reports the earlier title
+build works; the final base-camp and Onion-climbing changes need hardware
+feedback. No emulator runs followed the latest instruction to stop them.
 
-The full original AI, J2D/menu, particle and JAudio sequence systems remain
-unfinished. This is a hybrid native prototype, with nine unchanged original
-function bodies, adapted mechanics and new world/gameplay glue. Assets are
-converted from the personal ISO, not checked into the public repository.
+Ten unchanged original bodies are linked through native adapters. Full Brain,
+J2D/E2D, particles, JAudio sequencing and Valley BGM remain incomplete. The title
+uses genuine environment/models/layouts but is not an identical implementation.
+Original base-camp coordinates and storage attachment points now come from the
+ISO. Source only is published; private assets and actual-disc builds are excluded.
 
 ## Historical diagnostics below
 

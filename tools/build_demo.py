@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build D04 native gameplay demo from a validated personal Pikmin 2 ISO."""
+"""Build D05 native gameplay demo from a validated personal Pikmin 2 ISO."""
 import argparse
 from datetime import datetime, timezone
 import json
@@ -18,6 +18,9 @@ from ui_assets import convert_hud
 import menu_art
 import world_assets
 import audio_assets
+import stage_assets
+import title_assets
+import storage_assets
 
 
 def parameter(data, key, duplicate_equal=False):
@@ -31,7 +34,7 @@ def parameter(data, key, duplicate_equal=False):
 
 
 def run(iso, work_dir=None, makerom=None, tour=False, bannertool=None):
-    if tour:raise ValueError('D04 is a manual hardware demo; automated tour is retired')
+    if tour:raise ValueError('D05 is a manual hardware demo; automated tour is retired')
     if work_dir is None:
         (ROOT/'build').mkdir(exist_ok=True)
         work = Path(tempfile.mkdtemp(prefix='demo-',dir=ROOT/'build'))
@@ -40,8 +43,8 @@ def run(iso, work_dir=None, makerom=None, tour=False, bannertool=None):
     (work/'.gitignore').write_text('*\n')
     if any(c.isspace() for c in str(work)): raise ValueError('Choose a build workspace without spaces')
     out=work/'output';out.mkdir()
-    report={'demo':'D04','built_at_utc':datetime.now(timezone.utc).isoformat(),
-            'hardware':'D04 awaiting user hardware test; no emulator run requested',
+    report={'demo':'D05','built_at_utc':datetime.now(timezone.utc).isoformat(),
+            'hardware':'D05 awaiting user hardware test; see separate emulator smoke-test report',
             'models':{},'outputs':{},'auto_showcase':tour}
     try:
         paths=['user/Kando/piki/pikis.szs','user/Abe/piki/naviParms.txt',
@@ -50,8 +53,8 @@ def run(iso, work_dir=None, makerom=None, tour=False, bannertool=None):
                'enemy/data/Chappy/moyou_565.1.bti','enemy/data/Chappy/swallow_565.1.bti',
                'new_screen/eng/res_ground.szs','user/Nishimura/Camera/groundCameraParms.txt',
                'enemy/parm/enemyParms.szs','user/Abe/Pellet/pal/otakara_config.txt','user/Abe/Pellet/pal/carcass_config.txt',
-               'user/Yamashita/arc/gameTex.szs','user/Kando/effect/modeleffect.szs']
-        resources=dict.fromkeys(paths+world_assets.PATHS+audio_assets.PATHS)
+               'user/Yamashita/arc/gameTex.szs','user/Kando/effect/modeleffect.szs','message/font_foreign.szs','new_screen/eng/res_ufo.szs']
+        resources=dict.fromkeys(paths+world_assets.PATHS+audio_assets.PATHS+stage_assets.PATHS+title_assets.PATHS+storage_assets.PATHS)
         banner,report['disc']=extract(Path(iso),resources=resources)
         archive=rarc(resources[paths[0]])
         runtime=work/'runtime'
@@ -79,7 +82,7 @@ def run(iso, work_dir=None, makerom=None, tour=False, bannertool=None):
             (romfs/(output+'.p2m')).write_bytes(asset)
             report['models'][output]={**info,'archive_path':paths[index]+'/'+name,'source_sha256':sha(data),'converted_sha256':sha(asset)}
         hud_archive=rarc(resources[paths[10]])
-        hud,report['hud_assets'],layout,report['hud_layout']=convert_hud(hud_archive,rarc(resources[paths[15]]))
+        hud,report['hud_assets'],layout,report['hud_layout']=convert_hud(hud_archive,rarc(resources[paths[15]]),rarc(resources[paths[17]]),rarc(resources[paths[18]]),banner,rarc(resources[title_assets.PATHS[2]]),romfs/'title-ui.p2t')
         (romfs/'hud.p2u').write_bytes(hud)
         (app/'source/hud_layout.h').write_text(layout,encoding='ascii')
         effect=rarc(resources[paths[16]]);colors=brk_final_colors(effect['onyonspot_red.brk'])
@@ -89,6 +92,9 @@ def run(iso, work_dir=None, makerom=None, tour=False, bannertool=None):
         menu_art.create(banner,hud_archive['timg/rp_l64.bti'],app,runtime/'assets')
         world_assets.build(resources,archive,romfs,app/'source',report,parameter)
         audio_assets.build(resources,romfs,report)
+        stage_assets.build(resources,romfs,report)
+        title_assets.build(resources,romfs,app/'source',report)
+        storage_assets.build(resources,romfs,report)
         navi,piki=resources[paths[1]],resources[paths[2]]
         gravity=re.findall(rb'(?m)^gravity\s+([0-9.]+)',resources[paths[3]])
         if len(gravity)!=1: raise ValueError('Missing gravity')
@@ -140,22 +146,24 @@ def run(iso, work_dir=None, makerom=None, tour=False, bannertool=None):
         banner_tool=shutil.which(bannertool or 'bannertool')
         if not banner_tool:raise ValueError('bannertool missing; pass --bannertool /path/to/bannertool')
         banner_tool=str(Path(banner_tool).resolve())
-        command([banner_tool,'makebanner','-i','../assets/disc-banner.png','-a','../assets/silence.wav','-o','../assets/menu.bnr'],'banner.log')
-        report['home_menu_art']={'banner_source':'opening.bnr','icon_source':'new_screen/eng/res_ground.szs/timg/rp_l64.bti','banner_sha256':sha((runtime/'assets/menu.bnr').read_bytes()),'icon_png_sha256':sha((app/'icon.png').read_bytes())}
+        command([banner_tool,'makebanner','-i','../assets/disc-banner.png','-a','../assets/menu.wav','-o','../assets/menu.bnr'],'banner.log')
+        report['home_menu_art']={'banner_source':'opening.bnr','icon_source':'new_screen/eng/res_ground.szs/timg/rp_l64.bti','sound_source':'original Pikmin greeting stream (see audio report)','banner_sha256':sha((runtime/'assets/menu.bnr').read_bytes()),'icon_png_sha256':sha((app/'icon.png').read_bytes())}
         command(['make','-j2','TOUR='+str(int(tour))],'compile.log')
         smdh=(app/'pikmin2-demo.smdh').read_bytes()
+        report['developer']=smdh[392:520].decode('utf-16le').split('\0',1)[0]
+        if report['developer']!='eabwnhm':raise ValueError('Developer credit mismatch')
         report['smdh_title']=smdh[8:136].decode('utf-16le').split('\0',1)[0]
         if smdh[:4]!=b'SMDH' or report['smdh_title']!='Pikmin 2 - 3DS port':raise ValueError('HOME Menu title mismatch')
         elf=(app/'pikmin2-demo.elf').read_bytes()
         if elf[:6]!=b'\x7fELF\x01\x01' or struct.unpack_from('<H',elf,18)[0]!=40: raise ValueError('Expected ARM ELF')
         x3ds=(app/'pikmin2-demo.3dsx').read_bytes()
         if x3ds[:4]!=b'3DSX' or any((romfs/name).read_bytes() not in x3ds for name in ('red.p2m','onion.p2m')): raise ValueError('3DSX missing model')
-        shutil.copy2(app/'pikmin2-demo.3dsx',out/'Pikmin2-3DS-port-D04.3dsx')
+        shutil.copy2(app/'pikmin2-demo.3dsx',out/'Pikmin2-3DS-port-D05.3dsx')
         packager=shutil.which(makerom or 'makerom')
         if not packager: raise ValueError('makerom missing; pass --makerom')
-        command([str(Path(packager).resolve()),'-f','cia','-o',out/'Pikmin2-3DS-port-D04.cia','-rsf','demo.rsf','-target','t','-elf','pikmin2-demo.elf','-icon','pikmin2-demo.smdh','-banner','../assets/menu.bnr','-desc','app:4'],'package.log')
-        report['cia_checks']=verify_cia(out/'Pikmin2-3DS-port-D04.cia',(romfs/'red.p2m').read_bytes())
-        for file in romfs.iterdir():verify_cia(out/'Pikmin2-3DS-port-D04.cia',file.read_bytes())
+        command([str(Path(packager).resolve()),'-f','cia','-o',out/'Pikmin2-3DS-port-D05.cia','-rsf','demo.rsf','-target','t','-elf','pikmin2-demo.elf','-icon','pikmin2-demo.smdh','-banner','../assets/menu.bnr','-desc','app:4'],'package.log')
+        report['cia_checks']=verify_cia(out/'Pikmin2-3DS-port-D05.cia',(romfs/'red.p2m').read_bytes())
+        for file in romfs.iterdir():verify_cia(out/'Pikmin2-3DS-port-D05.cia',file.read_bytes())
         report['source_hashes']={str(f.relative_to(runtime)):sha(f.read_bytes()) for f in runtime.rglob('*') if f.is_file() and f.suffix in ('.c','.cpp','.h','.pica')}
         for f in out.iterdir():report['outputs'][f.name]={'sha256':sha(f.read_bytes()),'bytes':f.stat().st_size}
         report['result']='PASS: ARM compilation, real disc conversion, CIA/3DSX packaging'

@@ -1,20 +1,16 @@
-# Pikmin 2 native New 3DS port â€” prototype builder
+# Pikmin 2 - 3DS port
 
-**D04 hardware update:** [changes and limitations](docs/DEMO_D04.md). Adds material-layer fixes, upright Posy pellets, colour-group dismissal, original throw/switch samples and a 30 FPS cap. Compiled only; hardware check pending.
+Developer: **eabwnhm**. **D05** adds the original summer title scene and menu
+art, Valley geometry and base-camp placements, Onion climbing, ship storage,
+bottom-screen HUD, settings/debug pages, purple/white adapters and selected
+original sounds. [Features, controls, source accounting and limitations](docs/DEMO_D05.md).
 
-**D03 hardware handoff:** [features, controls, build instructions and remaining work](docs/DEMO_D03.md).
-The expanded demo adds three Onions, a 100-Pikmin field limit, storage and
-sprouting, three starting colours, a pond and hazards, five enemies, sixteen
-Pellet Posies, original BCA animations, original HUD layout/carry-font fixes,
-full 400x240 projection and selected original audio streams. HOME Menu artwork
-comes from the user's disc. **Compiled and packaged; no emulator or gameplay
-testing performed. Hardware feedback is required.**
-
-Original routines and source adapters are used, alongside new demo state
-machines. The full original Pikmin AI and JAudio engines are still incomplete;
-individual voices/SFX and sequenced area BGM are not implemented. The disc's
-title stream supplies the current demo music. See the D03 accounting before
-interpreting this as a full original-engine port.
+ARM compilation and private CIA/3DSX packaging succeeded. Brief checks of an
+earlier D05 title build ran in Azahar; the latest revision awaits hardware
+feedback. The full original AI, JAudio sequence engine and original menus are
+unfinished. Valley BGM is still pending. Title behavior and visuals are not yet
+identical to the original game. Original assets are converted from the user's
+own ISO and stay out of public Git history.
 
 ```sh
 python tools/build_demo.py --iso "/path/to/Pikmin2.iso" --makerom /path/to/makerom --bannertool /path/to/bannertool

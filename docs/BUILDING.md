@@ -1,3 +1,5 @@
+Current playable prototype: [D05 features and controls](DEMO_D05.md). Developer: eabwnhm.
+
 # Current gameplay demo build
 
 For **Pikmin 2 - 3DS port D03**, use [the current build instructions](DEMO_D03.md#build-and-hardware-feedback).

@@ -3,17 +3,18 @@
 #include <stdbool.h>
 #include "camera.h"
 #define SQUAD 100
+#define PIKI_TYPES 5
 #define MAX_ITEMS 32
 #define MAX_ENEMIES 5
 #define MAX_POSIES 16
-#define MAX_HAZARDS 7
+#define MAX_HAZARDS 9
 #define MAX_OBSTACLES 6
 typedef struct { float x,y,z; } V3;
-typedef enum { FOLLOW, AIR, IDLE, CARRY, ATTACK, LOST, HELD, UNUSED, SPROUT, SEED_AIR, ENTER_ONION, BURNING, DROWNING, DYING, DISBANDING } PikiState;
-typedef struct { V3 pos,vel,disband_target; float face,work_time; PikiState state; int item,target; float settle;unsigned kind,owner;bool rejoin,called; } Piki;
-typedef struct {V3 pos,home;float face,health,max_health,cooldown;bool dead,delivered;unsigned state,kind,item;} Bulborb;
+typedef enum { FOLLOW, AIR, IDLE, CARRY, ATTACK, LOST, HELD, UNUSED, SPROUT, SEED_AIR, ENTER_ONION, BURNING, DROWNING, DYING, DISBANDING, POISONED, SHOCKED, CELEBRATE, PLUCKING, EXIT_ONION } PikiState;
+typedef struct { V3 pos,vel,disband_target; float face,work_time; PikiState state; int item,target; float settle;unsigned kind,owner;bool rejoin,called;float travel,storage_scale;unsigned storage_leg,storage_phase; } Piki;
+typedef struct {V3 pos,home;float face,health,max_health,cooldown;bool dead,delivered;unsigned state,kind,item;float dormant,stun;} Bulborb;
 typedef enum { ITEM_TREASURE,ITEM_CARCASS,ITEM_PELLET } ItemType;
-typedef struct {V3 pos;int weight,max_carriers;bool available,delivered;float lift,radius,height;ItemType type;unsigned model,color,destination,value,seeds,matching_seeds;} CarryItem;
+typedef struct {V3 pos;int weight,max_carriers;bool available,delivered;float lift,radius,height;ItemType type;unsigned model,color,destination,value,seeds,matching_seeds;float suction;bool collecting;} CarryItem;
 typedef struct {V3 pos;unsigned item;float health,scale;bool alive;} PelletPosy;
 typedef struct {V3 pos;float radius;unsigned kind;} Hazard;
 typedef struct {V3 pos;float half_x,half_z,height;} Obstacle;
@@ -52,12 +53,16 @@ typedef struct {
     Obstacle obstacles[MAX_OBSTACLES];
     unsigned item_count,enemy_count,posy_count;
     int held_piki;
-    unsigned onion_stored[3],selected_kind;
+    unsigned onion_stored[PIKI_TYPES],selected_kind;
+    unsigned withdraw[PIKI_TYPES];float release_clock[PIKI_TYPES];
     bool other_following,plucking;
     V3 other_velocity;
     int onion_menu,onion_adjust;
     float pluck_timer;
-    unsigned captain_action;float action_timer;
+    unsigned captain_action;float action_timer;float other_pluck_timer;
+    float death_timer,switch_timer,treasure_timer;int dead_captain,treasure_item;bool game_over;
+    unsigned stage,plucks;float bounds_x,bounds_z;
+    struct {unsigned sound,entity;V3 pos;} events[32];unsigned event_count;
 } Game;
 void game_init(Game*,Parameters);
 void game_step(Game*,Input,float);
@@ -71,6 +76,11 @@ unsigned game_total_count(const Game*);
 unsigned game_returnable(const Game*,unsigned);
 V3 game_onion_position(unsigned);
 V3 game_ship_position(void);
+V3 game_ship_goal(void);
+float game_storage_face(unsigned);
+V3 game_storage_point(unsigned,unsigned);
+void game_load_stage(Game*,unsigned);
+unsigned game_carry_strength(const Game*,int);
 bool game_in_water(V3);
 float game_day_ratio(const Game*);
 unsigned game_day_number(const Game*);

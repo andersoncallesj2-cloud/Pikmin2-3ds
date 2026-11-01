@@ -27,6 +27,8 @@ def build(resources,pikis,romfs,source,report,parameter):
         result,info=convert(data,**kwargs);(romfs/(name+'.p2m')).write_bytes(result);models[name]=info
     # These are the original Piki::pikiColors, not an invented palette.
     colors=[(0,50,255),(255,30,0),(255,210,0)]
+    for label,color in [('purple',(130,0,170)),('white',(255,255,255))]:
+        save(label,pikis['piki_model/piki_p2_'+('black' if label=='purple' else 'white')+'.bmd'],tint=color,tint_materials=(0,),skinned=True)
     for color,label in enumerate(('blue','red','yellow')):
         if label!='red':save(label,pikis['piki_model/piki_p2_'+label+'.bmd'],tint=colors[color],tint_materials=(0,),skinned=True)
         seed=rarc(resources[PATHS[4]])['pikihead.bmd'];save('seed_'+label,seed,tint=colors[color],tint_materials=(0,))
@@ -39,6 +41,8 @@ def build(resources,pikis,romfs,source,report,parameter):
         if len(entries)!=1:raise ValueError('Ambiguous original model: '+path)
         save(label,entries[0],unlit=label in ('water','posy'),skinned=label=='dwarf',bake_materials=label=='posy')
     red=rarc(resources['enemy/data/Chappy/model.szs'])['enemy.bmd']
+    for label in ('cursor','marker'):
+        save(label,pikis['cursor/'+label+'.bmd'],material_colors=brk_final_colors(pikis['cursor/'+('arrow_orima' if label=='cursor' else 'wakka_orima')+'.brk']),unlit=True)
     save('orange',red,external_textures={0:resources[PATHS[9]],1:resources[PATHS[10]]},skinned=True)
     report['animations']={}
     def animation(name,model,arc,clips):
@@ -48,12 +52,12 @@ def build(resources,pikis,romfs,source,report,parameter):
             (3,'motion/attack1.bca'),(4,'motion/pickloop.bca'),(5,'motion/rolljmp.bca'),
             (6,'motion/hang.bca'),(7,'motion/fue.bca'),(8,'motion/nuku.bca'),
             (9,'motion/oboreru.bca'),(10,'motion/dead.bca')]
-    for name,path in [('olimar','orima_model/orima1.bmd'),('louie','orima_model/orima3.bmd')]+[(c,'piki_model/piki_p2_'+c+'.bmd') for c in ('blue','red','yellow')]:
+    for name,path in [('olimar','orima_model/orima1.bmd'),('louie','orima_model/orima3.bmd')]+[(c,'piki_model/piki_p2_'+c+'.bmd') for c in ('blue','red','yellow','black','white')]:
         clips=common
         if name in ('olimar','louie'):
             replacements={3:'motion/punch.bca',5:'motion/throw.bca',6:'motion/trwwait.bca'}
             clips=[(state,replacements.get(state,label)) for state,label in common]
-        animation(name,pikis[path],pikis,clips)
+        animation('purple' if name=='black' else name,pikis[path],pikis,clips+[(11,'motion/nigeru.bca'),(12,'motion/kizuku.bca'),(13,'motion/gattu.bca'),(14,'motion/nukareru.bca'),(15,'motion/gdead.bca'),(16,'motion/hnoboru.bca')])
     for name,model,arc in [('bulborb',red,rarc(resources[PATHS[14]])),('orange',red,rarc(resources[PATHS[14]])),('dwarf',rarc(resources[PATHS[0]])['enemy.bmd'],rarc(resources[PATHS[15]]))]:
         wait='type1.bca' if name!='dwarf' else 'wait1.bca'
         animation(name,model,arc,[(0,wait),(1,'move1.bca'),(3,'attack.bca'),(10,'dead.bca')])
@@ -90,6 +94,10 @@ def build(resources,pikis,romfs,source,report,parameter):
     lines.extend(['#define DEMO_DAY_SECONDS '+cf(real_day),'#define DEMO_FIRE_TIME '+cf(parameter(piki,'p055'))])
     # Original Navi throw yellow parameter id is resolved from its declaration.
     lines.append('#define DEMO_YELLOW_THROW '+cf(parameter(navi,'p054')))
+    lines.append('#define DEMO_WHITE_SPEED '+cf(parameter(piki,'P001')))
+    lines.append('#define DEMO_PURPLE_SPEED '+cf(parameter(piki,'P002')))
+    lines.append('static const float demo_piki_scale[5]={'+','.join(cf(parameter(piki,k)) for k in ('p007','p007','p007','p009','p008'))+'};')
+    lines.append('static const float demo_piki_damage[5]={'+','.join(cf(parameter(piki,k)) for k in ('p004','p012','p013','P003','P004'))+'};')
     (source/'demo_settings.h').write_text('\n'.join(lines)+'\n',encoding='ascii')
     report['world_tuning']={'enemy':enemies,'treasures':treasures,'pellets':pellet_config,'day_seconds':real_day}
     # Genuine dirt texture from a cave-room model, on a newly authored flat mesh.

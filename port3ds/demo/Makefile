@@ -44,7 +44,7 @@ ROMFS		:= romfs
 #---------------------------------------------------------------------------------
 APP_TITLE := Pikmin 2 - 3DS port
 APP_DESCRIPTION := Pikmin 2 - 3DS port
-APP_AUTHOR := Port prototype
+APP_AUTHOR := eabwnhm
 
 # options for code generation
 #---------------------------------------------------------------------------------

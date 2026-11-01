@@ -1,6 +1,6 @@
-/* D03 assertions, updated but intentionally NOT run in this handoff.
- * Link game.c, camera.c, original_follow.c, original_math.c and port_math.c; include the
- * private build source folder for generated demo_settings.h for future host runs. */
+/* Host regressions for gameplay invariants. Compile the C runtime plus stage.c
+ * and original_ai.cpp; include a private build folder for demo_settings.h.
+ * No rendered images, proprietary models or audio fixtures are embedded. */
 #include "game.h"
 #include <assert.h>
 #include <math.h>
@@ -36,13 +36,34 @@ int main(void){
     tick(&g,(Input){.angle_pressed=true},1);assert(g.camera.high==1);
     tick(&g,(Input){.switch_pressed=true},1);assert(g.active_captain==1);
     game_init(&g,p);g.captain.z=-100;tick(&g,(Input){.x=1},600);assert(g.captain.x<=611.51f);
-    game_init(&g,p);assert(game_field_count(&g)==30&&game_total_count(&g)==90);
+    game_init(&g,p);assert(game_field_count(&g)==30&&game_total_count(&g)==130);
     for(unsigned i=0;i<g.enemy_count;i++)g.enemies[i].delivered=g.enemies[i].dead=true;
     for(int i=0;i<8;i++){g.pikis[i].state=CARRY;g.pikis[i].item=0;g.pikis[i].pos=g.items[0].pos;}
     tick(&g,(Input){0},3000);assert(g.items[0].delivered&&g.pokos==90);
     game_init(&g,p);g.captain=game_onion_position(1);
     tick(&g,(Input){.grab_pressed=true},1);assert(g.onion_menu==1);
     tick(&g,(Input){.menu_delta=10},1);tick(&g,(Input){.menu_accept=true},1);
-    assert(g.onion_stored[1]==10&&game_field_count(&g)==40);
-    puts("D03 controller and destination assertions passed");return 0;
+    tick(&g,(Input){0},25);assert(g.onion_stored[1]==10&&game_field_count(&g)==40);
+    /* Captain down must transfer control, then both-down must terminate play. */
+    game_init(&g,p);g.captain_health[0]=0;tick(&g,(Input){0},130);
+    assert(g.active_captain==1&&!g.game_over&&g.dead_captain<0);
+    g.captain_health[1]=0;tick(&g,(Input){0},130);assert(g.game_over);
+    /* Cycle a held Pikmin without consuming B/whistle. */
+    game_init(&g,p);tick(&g,(Input){.grab_pressed=true,.grab_held=true},1);
+    unsigned kind=g.pikis[g.held_piki].kind;
+    tick(&g,(Input){.cycle_pressed=true,.grab_held=true},1);
+    assert(g.held_piki>=0&&g.pikis[g.held_piki].kind!=kind&&game_count(&g,HELD)==1);
+    /* Purple and white storage share the ship pickup point. */
+    game_init(&g,p);g.captain=game_ship_goal();tick(&g,(Input){.grab_pressed=true},1);
+    assert(g.onion_menu==3);tick(&g,(Input){.menu_delta=5},1);tick(&g,(Input){.menu_accept=true},1);
+    tick(&g,(Input){0},12);assert(g.onion_stored[3]==15&&game_field_count(&g)==35);
+    /* Capacity must include sprouts and airborne seeds. */
+    game_init(&g,p);for(unsigned i=0;i<SQUAD;i++)g.pikis[i]=(Piki){.state=SPROUT,.kind=1};
+    g.onion_menu=1;tick(&g,(Input){.menu_delta=100},1);tick(&g,(Input){.menu_accept=true},1);
+    assert(game_field_count(&g)==100&&g.onion_stored[1]==20);
+    /* A purple contributes ten units only inside the carrying contact radius. */
+    game_init(&g,p);for(unsigned i=0;i<SQUAD;i++)g.pikis[i].state=UNUSED;
+    g.pikis[0]=(Piki){.state=CARRY,.item=0,.kind=3,.pos=g.items[0].pos};
+    assert(game_carry_strength(&g,0)==10);g.pikis[0].pos.x+=1000;assert(game_carry_strength(&g,0)==0);
+    puts("D05 controller, storage, carrying, field limit and captain-death assertions passed");return 0;
 }

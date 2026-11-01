@@ -7,7 +7,7 @@ a fixed neutral lookup; this is not a full dynamic GX renderer.
 import math
 from j3d_model import bti
 
-def bake(mat,r,tex,override=None):
+def bake(mat,r,tex,override=None,domain=(0,1,0,1)):
     rawregs=[list(mat.read('4h',mat.u32(80)+mat.u16(r+220+i*2)*8)) for i in range(4)]
     if override:rawregs[0]=list(override)
     stages=[];images={};width=height=8
@@ -30,7 +30,10 @@ def bake(mat,r,tex,override=None):
                         if mi!=65535:
                             p=mat.u32(64)+mi*100;cx,cy,_=mat.read('3f',p+4);sx,sy=mat.read('2f',p+16);angle=mat.read('h',p+24)[0]*math.pi/32768;tx,ty=mat.read('2f',p+28)
                             co,si=math.cos(angle),math.sin(angle);transform=(sx*co,-sx*si,(-sx*co*cx+sx*si*cy)+cx+tx,sy*si,sy*co,(-sy*si*cx-sy*co*cy)+cy+ty)
-        stages.append((st,image,transform,reflection,channel))
+        wrap=(0,0)
+        if slot<8 and image:
+            ti=mat.u16(r+132+slot*2);idx=mat.u16(mat.u32(72)+ti*2);wrap=tuple(tex.get(tex.u32(12)+idx*32+6,2))
+        stages.append((st,image,transform,reflection,channel,wrap))
     width=min(256,width);height=min(512,height);out=bytearray(width*height*4)
     raster=mat.get(mat.u32(32)+mat.u16(r+8)*4,4)
     def op(a,b,c,d,mode,bias,scale,clamp):
@@ -40,12 +43,18 @@ def bake(mat,r,tex,override=None):
     for y in range(height):
         for x in range(width):
             regs=[list(rawregs[3])]+[list(c) for c in rawregs[:3]]
-            for st,image,tr,reflection,ch in stages:
-                u,v=(x+.5)/width,(y+.5)/height
+            for st,image,tr,reflection,ch,wrap in stages:
+                u,v=domain[0]+(x+.5)/width*(domain[1]-domain[0]),domain[2]+(y+.5)/height*(domain[3]-domain[2])
                 if reflection:u=v=.5
                 elif tr:u,v=tr[0]*u+tr[1]*v+tr[2],tr[3]*u+tr[4]*v+tr[5]
                 if image:
-                    w,h,pix=image;px=max(0,min(w-1,int(u*w)));py=max(0,min(h-1,int(v*h)));color=pix[(py*w+px)*4:(py*w+px)*4+4]
+                    w,h,pix=image
+                    def coordinate(value,mode):
+                        if mode==1:return value%1
+                        if mode==2:
+                            q=value%2;return q if q<1 else 2-q
+                        return max(0,min(1,value))
+                    u,v=coordinate(u,wrap[0]),coordinate(v,wrap[1]);px=max(0,min(w-1,int(u*w)));py=max(0,min(h-1,int(v*h)));color=pix[(py*w+px)*4:(py*w+px)*4+4]
                 else:color=(255,255,255,255)
                 ras=raster if ch==4 else (0,0,0,0)
                 def ci(code,c):

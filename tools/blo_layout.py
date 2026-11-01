@@ -8,7 +8,7 @@ import math
 from j3d_model import Block
 
 
-def read_layout(data):
+def read_layout(data, animation=None, frame=0, frame_by_tag=None):
     if data[:8]!=b'SCRNblo2' or len(data)>1024*1024:raise ValueError('Expected bounded BLO2')
     source=Block(data);offset=32;chunks=[]
     count=source.u32(12)
@@ -46,7 +46,7 @@ def read_layout(data):
         color=b.get(b.u32(32)+b.u16(p+8)*4,4)
         return refs[texture],black,white,tuple(color)
     # Matrix is (xx,xy,tx,yx,yy,ty); pane anchors affect bounds, not children.
-    identity=(1,0,0,0,1,0);current=(identity,True);last=current;stack=[];pictures=[];panes={}
+    identity=(1,0,0,0,1,0);current=(identity,True,frame,'');last=current;stack=[];pictures=[];panes={}
     def concat(a,b):
         return (a[0]*b[0]+a[1]*b[3],a[0]*b[1]+a[1]*b[4],a[0]*b[2]+a[1]*b[5]+a[2],
                 a[3]*b[0]+a[4]*b[3],a[3]*b[1]+a[4]*b[4],a[3]*b[2]+a[4]*b[5]+a[5])
@@ -60,13 +60,18 @@ def read_layout(data):
             visible,anchor=b.read('2B',q+12);name=b.get(q+16,8).strip(b'\0').decode('ascii')
             w,h,sx,sy,rx,ry,rz,x,y=b.read('9f',q+32)
             if any(not math.isfinite(v) for v in (w,h,sx,sy,rx,ry,rz,x,y)) or rx or ry:raise ValueError('Unsupported BLO pane transform')
+            selected_frame=(frame_by_tag or {}).get(name,current[2]);group=name if name in (frame_by_tag or {}) else current[3]
+            anim_index=b.u16(q+10)
+            if animation and anim_index!=65535:
+                pose=animation.pose(anim_index,selected_frame)
+                sx,sy,rz,x,y=pose[0],pose[6],pose[4]*360/65536,pose[2],pose[8]
             angle=rz*math.pi/180;c=math.cos(angle);s=math.sin(angle)
-            matrix=concat(current[0],(c*sx,-s*sy,x,s*sx,c*sy,y));last=(matrix,current[1] and bool(visible))
+            matrix=concat(current[0],(c*sx,-s*sy,x,s*sx,c*sy,y));last=(matrix,current[1] and bool(visible),selected_frame,group)
             bounds=(-w*(anchor%3)*.5,-h*(anchor//3)*.5)
             points=[]
             for px,py in ((0,0),(w,0),(0,h),(w,h)):
                 px+=bounds[0];py+=bounds[1];points.append((matrix[0]*px+matrix[1]*py+matrix[2],matrix[3]*px+matrix[4]*py+matrix[5]))
-            record={'tag':name,'points':points,'visible':last[1]}
+            record={'tag':name,'points':points,'visible':last[1],'group':group}
             panes[name]=record
             if tag==b'PIC2':
                 trailer=q+b.u32(q+4);info=mat(b.u16(trailer+4))

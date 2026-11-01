@@ -150,7 +150,7 @@ def brk_final_colors(data):
     return result
 
 
-def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=None, material_colors=None, unlit=False, skinned=False, bake_materials=False):
+def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=None, material_colors=None, unlit=False, skinned=False, bake_materials=False, max_texture_size=1024, joint_poses=None):
     if len(data) > 8*1024*1024 or data[:8] != b'J3D2bmd3':
         raise ValueError('Expected bounded J3D2bmd3')
     source = Block(data)
@@ -187,6 +187,7 @@ def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=Non
     else: raise ValueError('BMD hierarchy limit exceeded')
     joint_count = jnt.u16(8)
     if not 0 < joint_count <= 256: raise ValueError('BMD joint limit exceeded')
+    if joint_poses is not None and len(joint_poses)!=joint_count:raise ValueError('BMD pose joint mismatch')
     worlds = {}; visiting = set()
     def world(index):
         if index in worlds: return worlds[index]
@@ -195,8 +196,8 @@ def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=Non
         visiting.add(index)
         r = jnt.u32(12)+jnt.u16(jnt.u32(16)+2*index)*64
         sx0, sy0, sz0, rx, ry, rz, tx, ty, tz = jnt.read('3f3h2x3f', r+4)
-        if parents[index]>=0 and any(abs(s-1) > 1e-5 for s in (sx0, sy0, sz0)):
-            raise ValueError('Non-unit joint scale requires scale-compensation support')
+        if joint_poses is not None:
+            v=joint_poses[index];sx0,sy0,sz0=v[0],v[3],v[6];rx,ry,rz=v[1],v[4],v[7];tx,ty,tz=v[2],v[5],v[8]
         sx, sy, sz = (math.sin(a*math.pi/32768) for a in (rx, ry, rz))
         cx, cy, cz = (math.cos(a*math.pi/32768) for a in (rx, ry, rz))
         local = [[cz*cy, sx*cz*sy-cx*sz, cx*cz*sy+sx*sz, tx],
@@ -205,6 +206,12 @@ def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=Non
         for row in range(3):
             for col,scale in enumerate((sx0,sy0,sz0)):local[row][col]*=scale
         parent = parents[index]
+        if parent >= 0 and jnt.get(r+2,1)[0] == 1:
+            pr=jnt.u32(12)+jnt.u16(jnt.u32(16)+2*parent)*64
+            parent_scale=jnt.read('3f',pr+4) if joint_poses is None else [joint_poses[parent][i] for i in (0,3,6)]
+            for row,scale in enumerate(parent_scale):
+                if abs(scale)<1e-8:raise ValueError('Zero parent scale')
+                for col in range(3):local[row][col]/=scale
         worlds[index] = multiply(world(parent), local) if parent >= 0 else local
         visiting.remove(index)
         return worlds[index]
@@ -253,12 +260,15 @@ def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=Non
         if not start or (index+1)*n*size > end-start: raise ValueError('Vertex index out of bounds')
         return tuple(x/(2**frac if kind != 4 else 1) for x in vtx.read(str(n)+f, start+index*n*size))
     textures = []
-    if tex.u16(8) > 32: raise ValueError('Texture count exceeds limit')
+    if tex.u16(8) > 128: raise ValueError('Texture count exceeds limit')
     for i in range(tex.u16(8)):
         h = tex.u32(12)+32*i; fmt = tex.get(h,1)[0]; w, he = tex.read('HH',h+2)
         if external_textures and i in external_textures:
             w,he,rgba=bti(external_textures[i])
         else:rgba = texture(fmt,w,he,tex.get(h+tex.u32(h+28),len(tex.data)-h-tex.u32(h+28)))
+        if max(w,he)>max_texture_size:
+            ratio=max(w,he)/max_texture_size;nw=max(8,int(w/ratio));nh=max(8,int(he/ratio));nw=1<<(nw-1).bit_length();nh=1<<(nh-1).bit_length()
+            rgba=b''.join(rgba[(min(he-1,y*he//nh)*w+min(w-1,x*w//nw))*4:][:4] for y in range(nh) for x in range(nw));w,he=nw,nh
         pw=max(8,1<<(w-1).bit_length());ph=max(8,1<<(he-1).bit_length())
         if (pw,ph)!=(w,he):
             padded=bytearray(pw*ph*4)
@@ -268,6 +278,15 @@ def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=Non
                     padded[p:p+4]=rgba[src:src+4]
             rgba=padded
         textures.append((pw,ph,tex.get(h+6,2),tiled_rgba(rgba,pw,ph),w/pw,he/ph))
+    bake_domain=(0,1,0,1)
+    if bake_materials and 13 in formats:
+        points=[]
+        for index in range(100000):
+            try:points.append(array(13,index))
+            except ValueError:break
+        if points:
+            u0,u1=min(p[0] for p in points),max(p[0] for p in points);v0,v1=min(p[1] for p in points),max(p[1] for p in points)
+            if u1-u0>.001 and v1-v0>.001:bake_domain=(u0,u1,v0,v1)
     material_names=names(mat,mat.u32(20))
     batches = []; total_vertices = 0; all_positions = []
     for shape in range(shp.u16(8)):
@@ -285,7 +304,7 @@ def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=Non
         if texture_id >= len(textures): raise ValueError('Material texture index out of bounds')
         if bake_materials:
             from material_bake import bake
-            w,h,pixels=bake(mat,r,tex,(material_colors or {}).get(material_names[material]))
+            w,h,pixels=bake(mat,r,tex,(material_colors or {}).get(material_names[material]),bake_domain)
             texture_id=len(textures);textures.append((w,h,bytes((0,0)),tiled_rgba(pixels,w,h),1,1));color=(1,1,1,1)
         r = shp.u32(12)+shp.u16(shp.u32(16)+2*shape)*40
         matrix_type, groups, desc, mtx_init, draw_init = shp.read('Bx4H',r)
@@ -294,7 +313,7 @@ def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=Non
         for _ in range(24):
             a, t = shp.read('II',p); p += 8
             if a == 255: break
-            if not ((0 <= a <= 8 and t == 1) or (a in (9,10,11,12,13) and t in (2,3))):
+            if not ((0 <= a <= 8 and t == 1) or (a in (9,10,11,12,13,14,15,16,17,18,19,20) and t in (2,3))):
                 raise ValueError('Unsupported display-list vertex descriptor')
             attrs.append((a,t))
         else: raise ValueError('Missing vertex descriptor terminator')
@@ -328,6 +347,7 @@ def convert(data, tint=(255, 255, 255), tint_materials=(), external_textures=Non
                     normal = transform(matrix,array(10,indices[10]),0) if 10 in indices else (0,1,0)
                     light = 1 if unlit else .55+.45*max(0,sum(a*b for a,b in zip(normal,(.3,.85,.43))))
                     uv = array(13,indices[13]) if 13 in indices else (0,0)
+                    if bake_materials:uv=((uv[0]-bake_domain[0])/(bake_domain[1]-bake_domain[0]),(uv[1]-bake_domain[2])/(bake_domain[3]-bake_domain[2]))
                     vertex_color=array(11,indices[11]) if 11 in indices else (1,1,1,1)
                     # Native sampled texture is flipped vertically in memory.
                     us,vs=textures[texture_id][4:] if texture_id>=0 else (1,1)
