@@ -53,9 +53,11 @@ Displaying the banner does not mean the full original engine is running.
 ## Native engine status
 
 Native libctru startup, RomFS reads, CRC validation, bottom-screen diagnostics,
-Citro3D initialization and clear-colour transfer execute in Azahar. The app
-contains separate geometry/banner stages and input controls. Visible geometry,
-input response and clean START exit still require confirmation for this build.
+Citro3D initialization, clear-colour transfer and the actual banner render in
+Azahar. The user confirmed the mapped A key (J) selects the banner; a subsequent
+window capture showed the Pikmin 2 image, test 7, 18,432 vertices, CRC `5b089bc1`,
+successful draw checks and no queue-busy warning. Other stages, camera/toggles
+and clean START exit still require confirmation for this build.
 Rendering uses constant-colour triangles, not a GPU texture upload; the banner
 stage submits 18,432 vertices. This is a small resource probe, not a scalable
 texture/model renderer or a performance benchmark.
@@ -81,7 +83,11 @@ Azahar 2126.2 on this PC booted the actual-disc 3DSX in clear-colour mode. It
 loaded the real banner, displayed the expected CRC and raw SHA prefix, advanced
 the heartbeat and reported successful initialization. Controller keystrokes
 injected by the desktop automation did not reliably reach the emulated HID path.
-No claim is made that the new build's other stages or START exit passed.
+An explicit keyboard profile was saved on this PC, preserving the old profile.
+The user pressed J and confirmed the real banner appeared. A following capture
+independently showed the genuine banner and matching source/CRC overlay.
+See [keyboard mappings](AZAHAR_KEYBOARD.md). No claim is made that the other
+graphics stages or START exit passed.
 The CIA was structurally checked but not installed/launched in this session.
 Historical synthetic CIA emulator evidence remains separate.
 

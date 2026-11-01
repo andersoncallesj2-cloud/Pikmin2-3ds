@@ -9,9 +9,10 @@ GPVP01 disc 0/revision 0 now passes real-disc validation, BNR2 extraction,
 conversion, Windows ARM compilation, 3DSX generation and CIA packaging. The ISO
 prototype has seven independent graphics tests and SD logging. A small original
 title Pikmin BMD has been extracted and inventoried; it is not converted/rendered.
-Azahar boots the actual-disc 3DSX, loads the matching banner CRC and shows clear
-colour. Further emulator controls/geometry and all real-hardware tests remain
-unconfirmed. See [complete session report](docs/PAL_FIRST_BUILD.md).
+Azahar boots the actual-disc 3DSX, loads the matching banner CRC and renders the
+genuine Pikmin 2 banner after the user's keyboard A input. Other emulator stages,
+full controls/exit and all real-hardware tests remain unconfirmed. See
+[complete session report](docs/PAL_FIRST_BUILD.md).
 
 The sections below record earlier synthetic-only sessions; their claims that no
 dump was accessible are historical. The public binaries remain unchanged and
