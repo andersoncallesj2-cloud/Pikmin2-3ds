@@ -1,5 +1,11 @@
 # D01 playable increment — 1 November 2026
 
+Onion update: the delivery point now displays the genuine textured `goal.bmd`
+from the ISO's `user/Kando/onyon/arc.szs` (1,246 triangles, two textures), at
+0.65 model scale. It is a static visual landmark; spawning/storage and Onion
+animations are not implemented. The updated CIA/3DSX compile and contain the
+converted Onion; this addition has not yet been checked in an emulator or on hardware.
+
 Build with Python 3.10+, installed devkitPro devkitARM/libctru/Citro3D and makerom:
 
 ```powershell

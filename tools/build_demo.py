@@ -40,7 +40,7 @@ def run(iso, work_dir=None, makerom=None, tour=False):
             'models':{},'outputs':{},'auto_showcase':tour}
     try:
         paths=['user/Kando/piki/pikis.szs','user/Abe/piki/naviParms.txt',
-               'user/Abe/piki/pikiParms.txt','user/Kando/aiConstants.txt']
+               'user/Abe/piki/pikiParms.txt','user/Kando/aiConstants.txt','user/Kando/onyon/arc.szs']
         resources=dict.fromkeys(paths)
         _,report['disc']=extract(Path(iso),resources=resources)
         archive=rarc(resources[paths[0]])
@@ -55,6 +55,10 @@ def run(iso, work_dir=None, makerom=None, tour=False):
             asset,info=convert(archive[path],tint,mats)
             (romfs/(output+'.p2m')).write_bytes(asset)
             report['models'][output]={**info,'archive_path':path,'source_sha256':sha(archive[path]),'converted_sha256':sha(asset)}
+        onion=rarc(resources[paths[4]])['goal.bmd']
+        asset,info=convert(onion)
+        (romfs/'onion.p2m').write_bytes(asset)
+        report['models']['onion']={**info,'archive_path':paths[4]+'/goal.bmd','source_sha256':sha(onion),'converted_sha256':sha(asset)}
         navi,piki=resources[paths[1]],resources[paths[2]]
         gravity=re.findall(rb'(?m)^gravity\s+([0-9.]+)',resources[paths[3]])
         if len(gravity)!=1: raise ValueError('Missing gravity')
@@ -73,12 +77,13 @@ def run(iso, work_dir=None, makerom=None, tour=False):
         elf=(app/'pikmin2-demo.elf').read_bytes()
         if elf[:6]!=b'\x7fELF\x01\x01' or struct.unpack_from('<H',elf,18)[0]!=40: raise ValueError('Expected ARM ELF')
         x3ds=(app/'pikmin2-demo.3dsx').read_bytes()
-        if x3ds[:4]!=b'3DSX' or (romfs/'red.p2m').read_bytes() not in x3ds: raise ValueError('3DSX missing model')
+        if x3ds[:4]!=b'3DSX' or any((romfs/name).read_bytes() not in x3ds for name in ('red.p2m','onion.p2m')): raise ValueError('3DSX missing model')
         shutil.copy2(app/'pikmin2-demo.3dsx',out/'Pikmin2-Demo-D01.3dsx')
         packager=shutil.which(makerom or 'makerom')
         if not packager: raise ValueError('makerom missing; pass --makerom')
         command([str(Path(packager).resolve()),'-f','cia','-o',out/'Pikmin2-Demo-D01.cia','-rsf','demo.rsf','-target','t','-elf','pikmin2-demo.elf','-icon','pikmin2-demo.smdh','-banner','../assets/menu.bnr','-desc','app:4'],'package.log')
         report['cia_checks']=verify_cia(out/'Pikmin2-Demo-D01.cia',(romfs/'red.p2m').read_bytes())
+        verify_cia(out/'Pikmin2-Demo-D01.cia',(romfs/'onion.p2m').read_bytes())
         report['source_hashes']={str(f.relative_to(runtime)):sha(f.read_bytes()) for f in runtime.rglob('*') if f.is_file() and f.suffix in ('.c','.h','.pica')}
         for f in out.iterdir():report['outputs'][f.name]={'sha256':sha(f.read_bytes()),'bytes':f.stat().st_size}
         report['result']='PASS: ARM compilation, real disc conversion, CIA/3DSX packaging'

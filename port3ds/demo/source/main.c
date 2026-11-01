@@ -12,7 +12,7 @@
 typedef struct {float p[4],c[4],uv[4];} Vertex;
 typedef struct {Vertex *v;u32 count;int texture;} Batch;
 typedef struct {C3D_Tex tex[16];unsigned nt,nb;Batch batch[16];} Model;
-static Model olimar,pikmin,leaf;
+static Model olimar,pikmin,leaf,onion;
 static C3D_Tex white,ground;
 static Vertex *plane,*cube,*ring;
 static C3D_RenderTarget *target;
@@ -89,7 +89,7 @@ static bool initialize(void){
     shaderProgramInit(&program);program_ok=R_SUCCEEDED(shaderProgramSetVsh(&program,&shader->DVLE[0]));if(!program_ok)return false;
     C3D_BindProgram(&program);u_mvp=shaderInstanceGetUniformLocation(program.vertexShader,"projection");u_tint=shaderInstanceGetUniformLocation(program.vertexShader,"tint");
     if(u_mvp<0||u_tint<0)return false;
-    if(!load_model(&olimar,"romfs:/olimar.p2m")||!load_model(&pikmin,"romfs:/red.p2m")||!load_model(&leaf,"romfs:/leaf.p2m")){error="Model validation/load failed";return false;}
+    if(!load_model(&olimar,"romfs:/olimar.p2m")||!load_model(&pikmin,"romfs:/red.p2m")||!load_model(&leaf,"romfs:/leaf.p2m")||!load_model(&onion,"romfs:/onion.p2m")){error="Model validation/load failed";return false;}
     if(!primitives()){error="Primitive allocation";return false;}
     Mtx_PerspTilt(&projection,C3D_AngleFromDegrees(48),C3D_AspectRatioTop,2,1200,false);
     C3D_AttrInfo *a=C3D_GetAttrInfo();AttrInfo_Init(a);for(int i=0;i<3;i++)if(AttrInfo_AddLoader(a,i,GPU_FLOAT,4)<0)return false;
@@ -124,6 +124,7 @@ static void render(const Game *g){
     C_MTXLookAt(original,&eye,&up,&at);Mtx_Identity(&view);for(int i=0;i<3;i++)view.r[i]=FVec4_New(original[i][0],original[i][1],original[i][2],original[i][3]);
     matrix((V3){0,-.1f,25},0,(V3){240,1,235});draw(plane,6,&ground,1,1,1,1);
     draw_ring((V3){-150,0,-100},32,.3f,.85f,1);
+    model(&onion,(V3){-150,0,-100},0,.65f);
     matrix((V3){100,0,25},0,(V3){25,17.5f,25});draw(cube,36,&white,.45f,.4f,.32f,1);
     matrix(g->crate,0,(V3){12,9,12});draw(cube,36,&ground,g->delivered?.3f:1,.75f,.2f,1);
     model(&olimar,g->captain,g->face,1.2f);
@@ -162,6 +163,6 @@ int main(void){
         svcSleepThread(1000000);
     }
     if(c3d){u64 start=osGetTime();while(!stalled){if(C3D_FrameBegin(C3D_FRAME_NONBLOCK)){C3D_FrameEnd(0);break;}if(osGetTime()-start>250){stalled=true;break;}svcSleepThread(1000000);}
-        if(!stalled){C3D_Fini();free_model(&olimar);free_model(&pikmin);free_model(&leaf);if(program_ok)shaderProgramFree(&program);if(shader)DVLB_Free(shader);if(plane)linearFree(plane);if(cube)linearFree(cube);if(ring)linearFree(ring);if(white.data)C3D_TexDelete(&white);if(ground.data)C3D_TexDelete(&ground);}}
+        if(!stalled){C3D_Fini();free_model(&olimar);free_model(&pikmin);free_model(&leaf);free_model(&onion);if(program_ok)shaderProgramFree(&program);if(shader)DVLB_Free(shader);if(plane)linearFree(plane);if(cube)linearFree(cube);if(ring)linearFree(ring);if(white.data)C3D_TexDelete(&white);if(ground.data)C3D_TexDelete(&ground);}}
     if(log_file){fprintf(log_file,"EXIT stalled=%d frames=%u\n",stalled,frames);fclose(log_file);}romfsExit();if(!stalled)gfxExit();return 0;
 }
