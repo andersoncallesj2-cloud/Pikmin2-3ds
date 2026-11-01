@@ -1,7 +1,7 @@
 """Bounded, read-only Pikmin 2 disc validation and banner extraction.
 
-No gameplay assets or tools are downloaded. Initially allow only the known USA
-retail executable from the supplied projectPiki config/GPVE01/config.yml.
+No gameplay assets or tools are downloaded. Executable allowlist comes from
+projectPiki config/{GPVE01,GPVP01}/config.yml, not from trusting a disc label.
 """
 from dataclasses import dataclass
 import hashlib
@@ -21,6 +21,8 @@ class Revision:
 REVISIONS = {
     ('GPVE01', 0, 0): Revision('USA retail, known projectPiki GPVE01 executable',
                              '90d328bf8f190c90472e8c19e7e53c6ad0fe0d1a'),
+    ('GPVP01', 0, 0): Revision('Europe retail, known projectPiki GPVP01 executable',
+                             'cbd6d7b93536c8e84f75ed76027df740b4e1178b'),
 }
 
 
@@ -49,7 +51,18 @@ def decode_banner(data):
     return bytes(output)
 
 
-def extract(path, revisions=None):
+def disc_name(raw):
+    # Real retail discs include Japanese development filenames. Validate the
+    # original bytes first, then decode; never map a separator into a host path.
+    if not raw or raw in (b'.', b'..') or any(c < 32 or c in b'/\\:' for c in raw):
+        raise ValueError('Unsafe filesystem component')
+    try:
+        return raw.decode('utf-8')
+    except UnicodeDecodeError:
+        return raw.decode('cp932')
+
+
+def extract(path, revisions=None, *, resources=None):
     revisions = REVISIONS if revisions is None else revisions
     with Path(path).open('rb') as disc:
         initial = os.fstat(disc.fileno())
@@ -70,7 +83,7 @@ def extract(path, revisions=None):
         disc_id = h[:6].decode('ascii', errors='replace')
         key = (disc_id, h[6], h[7])
         if key not in revisions:
-            raise ValueError(f'Unsupported disc/revision: {disc_id}, disc {h[6]}, revision {h[7]}; initially only GPVE01 disc 0 revision 0')
+            raise ValueError(f'Unsupported disc/revision: {disc_id}, disc {h[6]}, revision {h[7]}; supported retail discs: GPVE01/GPVP01 disc 0 revision 0')
         revision = revisions[key]
         dol_offset = word(h, 0x420)
         if dol_offset < 0x440:
@@ -108,7 +121,7 @@ def extract(path, revisions=None):
             end = names.find(b'\0', name_offset)
             if end < 0:
                 raise ValueError('Unterminated filesystem name')
-            name = names[name_offset:end].decode('ascii')
+            name = disc_name(names[name_offset:end])
             if not name or name in ('.', '..') or any(ord(c) < 32 or c in '/\\:' for c in name):
                 raise ValueError('Unsafe filesystem component')
             full = stack[-1][1] + name
@@ -126,6 +139,10 @@ def extract(path, revisions=None):
                     if length not in (0x1960, 0x1fa0):
                         raise ValueError('Unexpected opening.bnr size')
                     banner = read(offset, length)
+                if resources is not None and full in resources:
+                    if length > 16 * 1024 * 1024:
+                        raise ValueError('Requested resource exceeds 16 MiB read limit')
+                    resources[full] = read(offset, length)
             else:
                 raise ValueError('Invalid filesystem node type')
         if banner is None:
@@ -137,6 +154,9 @@ def extract(path, revisions=None):
     return banner, {'disc_id': disc_id, 'disc_number': h[6], 'revision': h[7],
                     'revision_name': revision.name, 'dol_sha1': dol_hash,
                     'test_fixture': revision.test_fixture, 'image_bytes': size,
+                    'source_configuration': f'config/{disc_id}/config.yml',
+                    'filesystem_entries': count,
+                    'fst_sha256': hashlib.sha256(fst).hexdigest(),
                     'asset_path': 'opening.bnr', 'asset_bytes': len(banner),
                     'asset_sha256': hashlib.sha256(banner).hexdigest()}
 

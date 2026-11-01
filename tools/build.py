@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build a native, ISO-dependent banner resource prototype; not full Pikmin 2."""
 import argparse
+from datetime import datetime, timezone
 import hashlib
 import json
 import os
@@ -46,9 +47,11 @@ def verify_cia(path, asset):
             'signature_scope': 'homebrew; not Nintendo-signed'}
 
 
-def run(iso, target='cia', work_dir=None, makerom=None, revisions=None, dolphin_tool=None):
+def run(iso, target='cia', work_dir=None, makerom=None, revisions=None, dolphin_tool=None, start_test=1):
     if target not in ('cia', '3dsx', 'both'):
         raise ValueError('Target must be cia, 3dsx or both')
+    if start_test not in range(1, 8):
+        raise ValueError('Start test must be between 1 and 7')
     iso = Path(iso).resolve()
     if work_dir is None:
         (ROOT / 'build').mkdir(exist_ok=True)
@@ -66,11 +69,14 @@ def run(iso, target='cia', work_dir=None, makerom=None, revisions=None, dolphin_
     (work / '.gitignore').write_text('*\n')
     output = work / 'output'
     output.mkdir()
-    report = {'prototype': 'ISO-derived opening.bnr resource probe', 'stages': {},
+    report = {'prototype': 'ISO-derived opening.bnr resource probe / ISO-PAL01 diagnostics', 'stages': {},
+              'built_at_utc': datetime.now(timezone.utc).isoformat(),
+              'diagnostic_start_test': start_test,
               'hardware': 'UNVERIFIED: previous New 3DS rendering failure remains open',
               'gameplay': 'not implemented', 'work_dir': str(work), 'outputs': {}}
     report_path = output / 'build-report.json'
     stage = 'ISO Validation'
+    build_env = os.environ.copy()
 
     def save():
         report_path.write_text(json.dumps(report, indent=2) + '\n')
@@ -90,7 +96,8 @@ def run(iso, target='cia', work_dir=None, makerom=None, revisions=None, dolphin_
     def command(args, cwd, logfile):
         try:
             with logfile.open('wb') as log:
-                subprocess.run([str(x) for x in args], cwd=cwd, stdout=log, stderr=subprocess.STDOUT, check=True)
+                subprocess.run([str(x) for x in args], cwd=cwd, env=build_env,
+                               stdout=log, stderr=subprocess.STDOUT, check=True)
         except subprocess.CalledProcessError as exc:
             report['failed_command'] = {'argv': [str(x) for x in args],
                                         'exit_code': exc.returncode, 'log': str(logfile)}
@@ -132,8 +139,26 @@ def run(iso, target='cia', work_dir=None, makerom=None, revisions=None, dolphin_
         if any(c.isspace() for c in str(work)):
             raise ValueError('The devkitPro make template needs a workspace path without whitespace; select --work-dir accordingly (ISO paths may contain spaces)')
         sdk = os.environ.get('DEVKITARM')
+        # devkitPro's Windows shell exports /opt/devkitpro, which native
+        # Python cannot resolve. Infer its real SDK root from the MSYS make
+        # executable, without changing the user's global SDK configuration.
+        if os.name == 'nt' and sdk and not (Path(sdk) / '3ds_rules').is_file():
+            make = shutil.which('make')
+            if make:
+                candidate = Path(make).resolve().parents[3] / 'devkitARM'
+                if (candidate / '3ds_rules').is_file():
+                    sdk = str(candidate)
         if not sdk or not (Path(sdk) / '3ds_rules').is_file():
             raise ValueError('Activate installed devkitPro devkitARM/libctru/Citro3D first (DEVKITARM/3ds_rules missing)')
+        sdk = Path(sdk).resolve()
+        build_env['DEVKITARM'] = sdk.as_posix()
+        build_env['DEVKITPRO'] = sdk.parent.as_posix()
+        build_env['PATH'] = os.pathsep.join([str(sdk / 'bin'), str(sdk.parent / 'tools/bin'), build_env.get('PATH', '')])
+        if os.name == 'nt':
+            # MSYS mktemp otherwise targets its installation's unwritable /tmp.
+            temp = work / 'tmp'
+            temp.mkdir()
+            build_env['TMPDIR'] = temp.as_posix()
         compiler = Path(sdk) / 'bin' / ('arm-none-eabi-gcc.exe' if os.name == 'nt' else 'arm-none-eabi-gcc')
         report['compiler_version'] = subprocess.check_output([str(compiler), '--version'], text=True).splitlines()[0]
         runtime = work / 'runtime'
@@ -144,9 +169,12 @@ def run(iso, target='cia', work_dir=None, makerom=None, revisions=None, dolphin_
         for directory in ('include', 'game_math', 'graphics', 'engine', 'hwdiag', 'assets', 'iso_prototype'):
             shutil.copytree(ROOT / 'port3ds' / directory, runtime / directory, ignore=ignore)
         app = runtime / 'iso_prototype'
+        # Also avoids mkdir -p traversing restricted ancestors in Windows MSYS.
+        (app / 'build').mkdir()
         romfs = app / 'romfs'
         romfs.mkdir()
         (romfs / 'banner.p2b').write_bytes(asset)
+        (romfs / 'start-test.txt').write_bytes(f'{start_test}\n'.encode('ascii'))
         title = 'SYNTHETIC TEST FIXTURE' if identity['test_fixture'] else 'USER DISC: Pikmin 2 resource'
         (romfs / 'source.txt').write_text(f'{title}\n{identity["disc_id"]} revision {identity["revision"]}\n{identity["asset_sha256"]}\nopening.bnr\n', encoding='ascii')
         logs = work / 'logs'
@@ -208,9 +236,11 @@ def main():
     p.add_argument('--work-dir', type=Path)
     p.add_argument('--makerom')
     p.add_argument('--dolphin-tool', help='Installed DolphinTool executable for RVZ input')
+    p.add_argument('--start-test', type=int, choices=range(1, 8), default=1,
+                   help='Initial graphics diagnostic (default: safe clear; 7: ISO banner)')
     args = p.parse_args()
     try:
-        run(args.iso, args.target, args.work_dir, args.makerom, dolphin_tool=args.dolphin_tool)
+        run(args.iso, args.target, args.work_dir, args.makerom, dolphin_tool=args.dolphin_tool, start_test=args.start_test)
     except (OSError, ValueError, UnicodeError, struct.error, subprocess.CalledProcessError) as exc:
         p.exit(1, f'Build failed: {exc}\n')
 

@@ -88,10 +88,16 @@ Test HW01 first; stop if any known stage freezes the console.
    and a bottom-screen resource CRC. For the public synthetic build expect
    `SYNTHETIC TEST FIXTURE`, raw banner SHA prefix
    `b2e7835f8b5e3e587c56d7b6dad0b666` and CRC `8dad7166`.
-4. Press **A**. Expect a rectangular image above/behind the three spheres and
-   checkerboard. With a real supported ISO this must be that dump's banner;
+4. In new source builds (ISO-PAL01), use **D-pad Left/Right** to step through
+   clear, triangle, cube, checkerboard, spheres, full debug scene and ISO banner.
+   Wait five seconds per stage. **A** jumps between banner and clear. The banner
+   is displayed separately from the debug geometry. The older public synthetic
+   binary still displays its card beside spheres. With a real supported ISO
+   the banner must match that dump's banner;
    compare the displayed raw SHA prefix with `build-report.json`. A clear screen
-   alone does not prove resource rendering. Default vertex count is 28,512.
+   alone does not prove resource rendering. New banner-only vertex count: 18,432.
+   The real GPVP01 banner has CRC `5b089bc1` and raw SHA prefix
+   `e8f4673b3f5fb234f5050cd8f1abab9f`.
 5. Hold **L/R** to orbit, **B** to reset. **X** changes the colour path (fixed
    colour deliberately obscures image colours). **Y** changes depth. Restore
    interleaved colour and depth ON to judge the image. **START** should exit.
@@ -99,7 +105,8 @@ Test HW01 first; stop if any known stage freezes the console.
    resource CRC/hash, GPU/queue/vertex status and whether START exits. A photo of
    both screens is useful. Do not publicly upload real game images or packages.
 
-The ISO prototype does not write a separate SD log; photograph the overlay and
-use HW01's log for lower-level failures. If exit fails or the heartbeat freezes,
+ISO-PAL01 appends an SD log to
+`/3ds/pikmin2-iso-prototype/hardware.log`; the older public fixture does not.
+Send that log and a photograph of the overlay. If exit fails or the heartbeat freezes,
 stop further stages. The same nonblocking path is reused, but recovery from a
 wedged hardware GPU remains unproven. The real-hardware issue is still open.

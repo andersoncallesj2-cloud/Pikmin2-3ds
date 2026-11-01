@@ -14,8 +14,10 @@ RomFS and displays it beside the diagnostic spheres. It reuses the original
 Section lifecycle, camera math and debug graphics extracts. It is **not a game
 compiler, original model loader or playable Pikmin 2**.
 
-Initially the validator permits only GPVE01 disc 0/revision 0 with the known
-projectPiki executable checksum. **No real game dump has been tested here.**
+The validator permits GPVE01 and GPVP01 disc 0/revision 0 with their known
+projectPiki executable checksums. **A real European GPVP01 ISO now passes
+validation, banner extraction, conversion, Windows ARM compilation and CIA
+packaging.** See [the real-disc session report](docs/PAL_FIRST_BUILD.md).
 Two synthetic-fixture builds passed real ARM compilation/CIA packaging, and the
 installed CIA renders in Azahar. The production command rejects those fixtures;
 there is no checksum bypass. **RVZ input now uses an installed DolphinTool**;
@@ -28,11 +30,20 @@ unsupported. RVZ conversion has been checked with synthetic data only.
 **[Synthetic smoke-test 3DSX](https://github.com/andersoncallesj2-cloud/Pikmin2-3ds/raw/refs/heads/main/downloads/pikmin2-iso-fixture.3dsx)**
 
 The public smoke build contains a generated colour pattern, **no Nintendo asset**.
-It starts in clear-colour mode: press **A** to show the card/spheres, **L/R** to
+It starts in clear-colour mode: press **A** to show the card, **L/R** to
 orbit and **START** to exit. A CIA built from a real ISO contains private game
 data and must stay out of public downloads and Git history. The old Windows EXE
 does not include this new Python pipeline; the native SDK tutorial requires no
 Docker. Hardware testing remains pending for every new target.
+
+The source now builds ISO-PAL01 with seven independent tests: clear, triangle,
+cube, checkerboard, spheres, full debug scene and the actual ISO banner. Use
+**D-pad Left/Right** to select, **A** to jump between banner/clear, **L/R** to
+orbit, **X** for colour, **Y** for depth, **B** to reset and **START** to exit.
+SD logs go to `/3ds/pikmin2-iso-prototype/hardware.log`. `--start-test 1..7`
+selects the startup stage; default 1 preserves safe clear. Existing public
+download binaries are historical builds and have not been replaced with private
+game data. This remains a banner probe, not a character/gameplay build.
 
 ## Optional Olimar model test (HW02)
 

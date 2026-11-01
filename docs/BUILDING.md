@@ -3,8 +3,8 @@
 The new builder implements a small, genuine data path: read a local supported
 ISO → extract `opening.bnr` → decode its image → compile the native ARM11 runtime
 with that image in RomFS → package CIA and/or 3DSX. It is not a full-game compiler.
-No real Pikmin 2 dump is currently accessible here. Real-disc compatibility and
-physical New 3DS rendering remain unverified.
+A real European GPVP01 revision-0 ISO has now passed the Windows pipeline.
+Physical New 3DS rendering remains unverified. See [session evidence](PAL_FIRST_BUILD.md).
 
 ## Tutorial: build with your own ISO
 
@@ -16,11 +16,14 @@ physical New 3DS rendering remain unverified.
 3. Install [Project_CTR makerom](https://github.com/3DSGuy/Project_CTR) and put it
    on `PATH`, or supply its full path with `--makerom`. Tested here with makerom
    0.19 and devkitARM GCC 16.1.0. Match the packager to your host OS.
-4. Keep your dumped ISO outside the checkout. Initially the validator permits
+4. Keep your dumped ISO outside the checkout. The validator permits
    **USA GPVE01, disc 0, revision 0**, with the `main.dol` SHA-1 from the supplied
    projectPiki `config/GPVE01/config.yml`:
    `90d328bf8f190c90472e8c19e7e53c6ad0fe0d1a`.
-   This is a configured allowlist, not a claim of real-disc testing. Other IDs,
+   It also accepts **Europe GPVP01, disc 0, revision 0**, requiring projectPiki's
+   `config/GPVP01/config.yml` DOL SHA-1
+   `cbd6d7b93536c8e84f75ed76027df740b4e1178b`. The European pipeline has been
+   tested with a real dump; US support remains fixture/configuration tested. Other IDs,
    revisions, modified executables, malformed filesystems and unsupported formats
    fail explicitly. Do not change checksums merely to force a build to pass.
 5. Run:
@@ -70,8 +73,24 @@ physical New 3DS rendering remain unverified.
 
 On **Windows**, use the devkitPro MSYS2 development terminal with native Python,
 Make and `makerom.exe`. No Docker is required. The new pipeline has been compiled
-on Linux here; its complete Windows workflow has not yet been tested. The older
+on Linux and, for the actual GPVP01 ISO, Windows. On Windows it resolves the
+MSYS SDK path for native Python and keeps compiler temporary files inside the
+private build workspace. The older
 downloadable Windows builder EXE does **not** include `tools/build.py`.
+
+Use `--start-test 7` for a build starting directly at the ISO banner, or leave it
+at the default 1 for the physical-hardware diagnostic sequence. These settings
+are recorded in the report and RomFS. Missing game assets never select a fallback.
+
+To privately extract and structurally inspect the next model candidate:
+
+```sh
+python tools/inspect_disc_model.py --iso "/path/to/Pikmin2.iso" --work-dir build/private-model-inspection
+```
+
+This writes `title-red-piki.bmd` and a JSON inventory in a new ignored directory.
+It validates BMD block extents/count fields, not geometry indices, materials,
+animation or visual correctness. It does **not** convert or render the model.
 
 ## What the stages actually do
 

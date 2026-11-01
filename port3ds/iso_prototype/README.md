@@ -13,9 +13,15 @@ you deliberately prepare a private staged copy with its required RomFS files.
 ## Runtime controls
 
 - Starts with safe clear colour and a resource status/CRC overlay.
-- A shows/hides the ISO-derived card plus the diagnostic floor/spheres.
+- D-pad Left/Right selects clear, triangle, cube, checkerboard, spheres,
+  full debug scene, or ISO banner. A jumps between banner and clear.
 - L/R orbits the camera; B resets it; X switches colour paths; Y toggles depth.
 - START exits. Do not continue testing if the console freezes.
+- Each stage resets to its appropriate colour/depth defaults. The triangle uses
+  an identity view to isolate it from original camera math. API results retain
+  `not run` rather than being labelled as failures before their stage executes.
+- SD diagnostics append to `/3ds/pikmin2-iso-prototype/hardware.log`.
+- Builder `--start-test 1..7` chooses an initial stage; default is clear.
 
 Normal asset display needs **interleaved colour ON** and **depth ON**. Fixed
 colour is intentionally a troubleshooting switch and hides the image colours.
@@ -27,7 +33,7 @@ digits of the raw banner SHA-256, which can be compared with the build report.
 Missing or corrupt resources produce a visible error, never a stock substitute.
 
 The initial GPU representation uses two constant-colour triangles per pixel:
-18,432 banner vertices plus 10,080 diagnostic vertices = **28,512**, within the
+18,432 banner vertices (separate from the diagnostic scene), within the
 32,768-vertex checked allocation. There is no GPU texture upload or new shader
 format in this milestone. Source RGB5A3 tiles become row-major RGB8; alpha is
 composited on black. No image resizing, model decimation or gameplay changes
@@ -80,7 +86,9 @@ Two independent compilations/packages succeed with different fixture banner
 bytes. Both CIA/3DSX outputs change, embedded asset presence and NCCH section
 hashes are checked, and source fixtures remain unchanged. CIA emulator tests
 verify install/boot, visible card, source/CRC overlay, camera control and exit.
-No real game dump or physical console was available for this pipeline session.
+Those were historical synthetic tests. A real GPVP01 ISO has since passed the
+Windows build/package pipeline; see [the session report](../../docs/PAL_FIRST_BUILD.md).
+Physical hardware testing remains pending.
 
 The public fixture smoke build is legal synthetic data, not an original game
 banner. **A CIA produced from a real ISO contains private copyrighted data and
